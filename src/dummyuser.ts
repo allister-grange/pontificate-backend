@@ -2,26 +2,31 @@
 const users = [];
 
 // Join user to chat
-function userJoin(id, userName, game, isReady) {
-  const user = { id, userName, game, isReady };
+function userJoin(id, userName, gameId) {
+  const user = { id, userName, gameId, isReady: false };
 
   users.push(user);
-  console.log(users, "users");
 
   return user;
 }
 
-// Get current user
-function getCurrentUser(id) {
+function getCurrentUser(id: string) {
   return users.find((user) => user.id === id);
 }
 
+function setPlayerToReady(id: string){
+    let user = getCurrentUser(id);
+    if(user){
+        user.isReady = true;
+    }
+}
+
 function getAllPlayersInGame(gameId: string): any[] {
-    return users.filter((user) => user.game === gameId);
+    return users.filter((user) => user.gameId === gameId);
 }
 
 // User leaves chat
-function userLeave(id) {
+function userLeave(id: string) {
   const index = users.findIndex((user) => user.id === id);
 
   if (index !== -1) {
@@ -33,5 +38,6 @@ module.exports = {
   userJoin,
   getCurrentUser,
   userLeave,
-  getAllPlayersInGame
+  getAllPlayersInGame,
+  setPlayerToReady
 };
