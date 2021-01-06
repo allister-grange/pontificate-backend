@@ -23,16 +23,15 @@ export default app => {
 
         socket.on("newPlayerLobbyEvent", data => {
             const { gameId, userName } = data.query;
-            
+
             //* if the game doesn't exist yet then return a failure
             //* we only want users to create rooms from the 'new game' button
-            if(!io.sockets.adapter.rooms.get(gameId))
-            {
+            if (!gameExists(gameId)) {
                 //TODO error message to the client
-                console.log("game doesn't exist yet, cancelling room join");
+                console.log("game doesn't exist yet, cancelling game join");
                 return;
             }
-            
+
             //* create user and put into temp storage (object for now, db soon)
             const user = userJoin(socket.id, userName, gameId);
 
@@ -52,21 +51,42 @@ export default app => {
             //* get user
             const user = getCurrentUser(socket.id);
 
+            if (!user) {
+                console.error(`No user found with socket id of ${socket.id}`);
+                return;
+            }
+
             setPlayerToReady(socket.id);
 
             console.log(`Player ${user.userName} is now ready in game ${user.gameId}`);
             const playersInGame = getAllPlayersInGame(user.gameId);
 
             //* emit message to all users that the player is ready
-            console.log(playersInGame);
-            
             io.in(user.gameId).emit("playerReadyEvent", {
                 playersInGame
             });
 
         });
 
-        // Disconnect , when user leave room
+        socket.on("startNewGameEvent", (data: any) => {
+
+            const { gameId } = data.query;
+
+            if (!gameExists(gameId)) {
+                //TODO error message to the client
+                console.log("game doesn't exist yet, cancelling game start");
+                return;
+            }
+            
+            // start up a new game
+            const playersInGame = getAllPlayersInGame(gameId);
+
+            console.log(`Starting game with id of ${gameId}`);
+
+            io.in(gameId).emit("gameStartedEvent", { playersInGame });
+        });
+
+        // Disconnect , when user leaves game
         socket.on("disconnect", () => {
             // delete user from users & emit that user has left the game
             const user = userLeave(socket.id);
@@ -74,7 +94,7 @@ export default app => {
             if (user) {
                 console.log(`User ${user.userName} left the game`);
 
-                io.to(user.room).emit("message", {
+                io.to(user.gameId).emit("message", {
                     userId: user.id,
                     userName: user.userName,
                     text: `${user.userName} has left the game`,
@@ -83,5 +103,9 @@ export default app => {
         });
 
     });
+
+    const gameExists = (gameId: string) => {
+        return io.sockets.adapter.rooms.get(gameId);
+    }
 
 }
