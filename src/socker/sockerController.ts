@@ -15,15 +15,32 @@ export default app => {
 
         console.log("New connection");
 
-        socket.on("playerLobbyEvent", () => {
-            //* create user
-            const { gameId, userName } = socket.handshake.query;
-            const user = userJoin(socket.id, userName, gameId); //init new user who is not ready
+        socket.on("createNewLobbyEvent", data => {
+            const { gameId } = data.query;
+            console.log(`Creating a new game with id of ${gameId}`);
+            socket.join(gameId);
+        });
+
+        socket.on("newPlayerLobbyEvent", data => {
+            const { gameId, userName } = data.query;
+            
+            //* if the game doesn't exist yet then return a failure
+            //* we only want users to create rooms from the 'new game' button
+            if(!io.sockets.adapter.rooms.get(gameId))
+            {
+                //TODO error message to the client
+                console.log("game doesn't exist yet, cancelling room join");
+                return;
+            }
+            
+            //* create user and put into temp storage (object for now, db soon)
+            const user = userJoin(socket.id, userName, gameId);
+
             socket.join(user.gameId);
             const playersInGame = getAllPlayersInGame(gameId);
             console.log('Game ' + gameId + ' had player ' + userName + ' join');
 
-            io.in(gameId).emit("playerLobbyEvent", {
+            io.in(gameId).emit("newPlayerLobbyEvent", {
                 userId: user.id,
                 userName: user.userName,
                 text: `${user.userName} has joined the game`,
@@ -48,7 +65,6 @@ export default app => {
             });
 
         });
-
 
         // Disconnect , when user leave room
         socket.on("disconnect", () => {
