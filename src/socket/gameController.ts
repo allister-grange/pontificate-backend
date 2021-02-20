@@ -28,7 +28,7 @@ export default app => {
             //* we only want users to create rooms from the 'new game' button
             if (!gameExists(gameId)) {
                 //TODO error message to the client
-                console.log("game doesn't exist yet, cancelling game join");
+                console.log(`game with id ${gameId} doesn't exist yet, cancelling game join for ${userName}`);
                 return;
             }
 
@@ -78,13 +78,29 @@ export default app => {
                 return;
             }
             
-            // start up a new game
             const playersInGame = getAllPlayersInGame(gameId);
 
             console.log(`Starting game with id of ${gameId}`);
 
             io.in(gameId).emit("gameStartedEvent", { playersInGame });
         });
+
+        socket.on("getCurrentPlayersInGameEvent", (data: any) => {
+
+          const { gameId } = data.query;
+
+          if (!gameExists(gameId)) {
+              //TODO error message to the client
+              console.log("game doesn't exist yet, cancelling game start");
+              return;
+          }
+          
+          const playersInGame = getAllPlayersInGame(gameId);
+
+          console.log(`Getting all players in game with id of ${gameId}`);
+
+          io.in(gameId).emit("getCurrentPlayersInGameEvent", { playersInGame });
+      });
 
         // Disconnect , when user leaves game
         socket.on("disconnect", () => {
