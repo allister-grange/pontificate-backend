@@ -1,4 +1,4 @@
-const { getCurrentUser, userLeave, userJoin, getAllPlayersInGame, setPlayerToReady } = require("../dummyuser");
+const { getCurrentUser, userLeave, userJoin, getAllPlayersInGame, setPlayerToReady } = require("../services/mockDBService");
 
 export default app => {
 
