@@ -94,12 +94,15 @@ export default app => {
               console.log("game doesn't exist yet, cancelling game start");
               return;
           }
-          
-          const playersInGame = getAllPlayersInGame(gameId);
 
           console.log(`Getting all players in game with id of ${gameId}`);
+          
+          //this is probably inefficient, need to have redux on the front end holding the socketRef in state
+          //as opposed to joining them into the room again when the game starts 
+          socket.join(gameId);
+          const playersInGame = getAllPlayersInGame(gameId);
 
-          io.in(gameId).emit("getCurrentPlayersInGameEvent", { playersInGame });
+          io.in(gameId).emit("playersInGame", { playersInGame });
       });
 
         // Disconnect , when user leaves game
