@@ -14,10 +14,15 @@ function getCurrentUser(id: string) {
   return users.find((user) => user.id === id);
 }
 
-function setPlayerToReady(id: string){
+function setPlayerReadyStatus(id: string, isPlayerReady: boolean){
+  if(!id || isPlayerReady === undefined){
+    console.error("ERROR: Incorrect arguments passed to setPlayerReadyStatus");
+    console.error(`ID is ${id}, isPlayerReady is ${isPlayerReady}`);
+    return;
+  }
     let user = getCurrentUser(id);
     if(user){
-        user.isReady = true;
+        user.isReady = isPlayerReady;
     }
 }
 
@@ -39,5 +44,5 @@ module.exports = {
   getCurrentUser,
   userLeave,
   getAllPlayersInGame,
-  setPlayerToReady
+  setPlayerReadyStatus
 };

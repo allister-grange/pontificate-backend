@@ -1,4 +1,4 @@
-const { getCurrentUser, userLeave, userJoin, getAllPlayersInGame, setPlayerToReady } = require("../services/mockDBService");
+const { getCurrentUser, userLeave, userJoin, getAllPlayersInGame, setPlayerReadyStatus } = require("../services/mockDBService");
 
 export default app => {
 
@@ -47,18 +47,19 @@ export default app => {
             });
         });
 
-        socket.on("playerReadyEvent", () => {
+        socket.on("playerReadyEvent", data => {
             //* get user
             const user = getCurrentUser(socket.id);
+            const { isPlayerReady } = data.query;
 
             if (!user) {
                 console.error(`No user found with socket id of ${socket.id}`);
                 return;
             }
 
-            setPlayerToReady(socket.id);
+            setPlayerReadyStatus(socket.id, isPlayerReady);
 
-            console.log(`Player ${user.userName} is now ready in game ${user.gameId}`);
+            console.log(`${user.userName} is now set to ready status ${user.isReady} in game ${user.gameId}`);
             const playersInGame = getAllPlayersInGame(user.gameId);
 
             //* emit message to all users that the player is ready
