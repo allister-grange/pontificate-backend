@@ -3,7 +3,7 @@ const users = [];
 
 // Join user to chat
 function userJoin(id, userName, gameId) {
-  const user = { id, userName, gameId, isReady: false };
+  const user = { id, userName, gameId, isReady: false, points: 0, turnActive: false };
 
   users.push(user);
 
@@ -14,20 +14,31 @@ function getCurrentUser(id: string) {
   return users.find((user) => user.id === id);
 }
 
-function setPlayerReadyStatus(id: string, isPlayerReady: boolean){
-  if(!id || isPlayerReady === undefined){
+function setPlayerReadyStatus(id: string, isPlayerReady: boolean) {
+  if (!id || isPlayerReady === undefined) {
     console.error("ERROR: Incorrect arguments passed to setPlayerReadyStatus");
     console.error(`ID is ${id}, isPlayerReady is ${isPlayerReady}`);
     return;
   }
-    let user = getCurrentUser(id);
-    if(user){
-        user.isReady = isPlayerReady;
-    }
+  let user = getCurrentUser(id);
+  if (user) {
+    user.isReady = isPlayerReady;
+  }
+}
+
+function setPointsOfPlayer(id: string, points: number) {
+  if (!id || !points) {
+    console.error("ERROR: Incorrect arguments passed to setPointsOfPlayer");
+    return;
+  }
+  let user = getCurrentUser(id);
+  if (user) {
+    user.points = points;
+  }
 }
 
 function getAllPlayersInGame(gameId: string): any[] {
-    return users.filter((user) => user.gameId === gameId);
+  return users.filter((user) => user.gameId === gameId);
 }
 
 // User leaves chat
@@ -44,5 +55,6 @@ module.exports = {
   getCurrentUser,
   userLeave,
   getAllPlayersInGame,
-  setPlayerReadyStatus
+  setPlayerReadyStatus,
+  setPointsOfPlayer
 };
