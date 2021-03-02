@@ -1,5 +1,5 @@
 const { getCurrentUser, userLeave, userJoin,
-  getAllPlayersInGame, setPlayerReadyStatus, setPointsOfPlayer } = require("../services/mockDBService");
+  getAllPlayersInGame, setPlayerReadyStatus, setPointsOfPlayer, changePlayerTurnStatus } = require("../services/mockDBService");
 
 export default app => {
 
@@ -103,10 +103,15 @@ export default app => {
       }
 
       const playersInGame = getAllPlayersInGame(gameId);
+      //get random player to start the game
+      const player = playersInGame[Math.floor(Math.random() * playersInGame.length)];
+      changePlayerTurnStatus(player, "ready");
+      //todo clean this up, think of a better way, don't need to access twice
+      const playersInGameAfterChange = getAllPlayersInGame(gameId);
 
       console.log(`Starting game with id of ${gameId}`);
 
-      io.in(gameId).emit("gameStartedEvent", { playersInGame });
+      io.in(gameId).emit("gameStartedEvent", { playersInGameAfterChange });
     });
 
     socket.on("getCurrentPlayersInGameEvent", (data: any) => {

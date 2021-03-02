@@ -1,9 +1,11 @@
+import { Player, TurnStatusOptions } from "../types";
+
 // TODO need to replace this with some sort of db
-const users = [];
+const users = [] as Player[];
 
 // Join user to chat
 function userJoin(id, userName, gameId) {
-  const user = { id, userName, gameId, isReady: false, points: 0, turnActive: false };
+  const user = { id, userName, gameId, isReady: false, points: 0, turnStatus: "waiting" as TurnStatusOptions};
 
   users.push(user);
 
@@ -37,7 +39,7 @@ function setPointsOfPlayer(id: string, points: number) {
   }
 }
 
-function getAllPlayersInGame(gameId: string): any[] {
+function getAllPlayersInGame(gameId: string): Player[] {
   return users.filter((user) => user.gameId === gameId);
 }
 
@@ -50,11 +52,16 @@ function userLeave(id: string) {
   }
 }
 
+function changePlayerTurnStatus(player: Player, status: TurnStatusOptions) {
+  users.find(toFind => toFind.id === player.id).turnStatus = status;
+}
+
 module.exports = {
   userJoin,
   getCurrentUser,
   userLeave,
   getAllPlayersInGame,
   setPlayerReadyStatus,
-  setPointsOfPlayer
+  setPointsOfPlayer,
+  changePlayerTurnStatus
 };
