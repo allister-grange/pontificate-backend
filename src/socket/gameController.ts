@@ -1,4 +1,4 @@
-const { getCurrentUser, userLeave, userJoin,
+const { getCurrentUser, userLeave, userJoin,getUserByUserName,
   getAllPlayersInGame, setPlayerReadyStatus, setPointsOfPlayer, changePlayerTurnStatus } = require("../services/mockDBService");
 
 export default app => {
@@ -72,15 +72,15 @@ export default app => {
 
     socket.on("addPointToPlayerEvent", data => {
       //* get user
-      const { points, userId } = data.query;
-      const user = getCurrentUser(userId);
+      const { points, userName } = data.query;
+      const user = getUserByUserName(userName);
 
       if (!user) {
-        console.error(`No user found with id of ${userId}`);
+        console.error(`No user found with username of ${userName}`);
         return;
       }
 
-      setPointsOfPlayer(userId, points);
+      setPointsOfPlayer(user.userName, points);
 
       console.log(`${user.userName} now has ${user.points} points in game ${user.gameId}`);
       const playersInGame = getAllPlayersInGame(user.gameId);

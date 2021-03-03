@@ -16,6 +16,10 @@ function getCurrentUser(id: string) {
   return users.find((user) => user.id === id);
 }
 
+function getUserByUserName(userName: string) {
+  return users.find((user) => user.userName === userName);
+}
+
 function setPlayerReadyStatus(id: string, isPlayerReady: boolean) {
   if (!id || isPlayerReady === undefined) {
     console.error("ERROR: Incorrect arguments passed to setPlayerReadyStatus");
@@ -28,12 +32,12 @@ function setPlayerReadyStatus(id: string, isPlayerReady: boolean) {
   }
 }
 
-function setPointsOfPlayer(id: string, points: number) {
-  if (!id || !points) {
+function setPointsOfPlayer(userName: string, points: number) {
+  if (!userName || !points) {
     console.error("ERROR: Incorrect arguments passed to setPointsOfPlayer");
     return;
   }
-  let user = getCurrentUser(id);
+  let user = getUserByUserName(userName);
   if (user) {
     user.points = points;
   }
@@ -63,5 +67,6 @@ module.exports = {
   getAllPlayersInGame,
   setPlayerReadyStatus,
   setPointsOfPlayer,
+  getUserByUserName,
   changePlayerTurnStatus
 };
