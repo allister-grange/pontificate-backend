@@ -1,5 +1,14 @@
-const { getCurrentUser, userLeave, userJoin,getUserByUserName,
+import { Player } from "../types";
+
+const { getCurrentUser, userLeave, userJoin, getPlayerByUserName, setPlayerTurnStatus,
   getAllPlayersInGame, setPlayerReadyStatus, setPointsOfPlayer, changePlayerTurnStatus } = require("../services/mockDBService");
+
+
+const GET_CURRENT_PLAYERS_IN_GAME_EVENT = "getCurrentPlayersInGameEvent";
+const PLAYERS_IN_GAME_RESPONSE = "playersInGame"
+const ADD_POINT_TO_PLAYER_EVENT = "addPointToPlayerEvent"
+const CHANGE_TURN_STATUS_FOR_PLAYER = "changeTurnStatusForPlayer"
+const SET_PLAYER_TURN_STATUS_TO_ACTIVE = "setPlayerTurnStatusToActive"
 
 export default app => {
 
@@ -73,7 +82,7 @@ export default app => {
     socket.on("addPointToPlayerEvent", data => {
       //* get user
       const { points, userName } = data.query;
-      const user = getUserByUserName(userName);
+      const user = getPlayerByUserName(userName);
 
       if (!user) {
         console.error(`No user found with username of ${userName}`);
@@ -86,10 +95,9 @@ export default app => {
       const playersInGame = getAllPlayersInGame(user.gameId);
 
       //* emit message to all users that the player is ready
-      io.in(user.gameId).emit("pointsAddedToPlayerResponse", {
+      io.in(user.gameId).emit(PLAYERS_IN_GAME_RESPONSE, {
         playersInGame
       });
-
     });
 
     socket.on("startNewGameEvent", (data: any) => {
@@ -109,7 +117,7 @@ export default app => {
       //todo clean this up, think of a better way, don't need to access twice
       const playersInGameAfterChange = getAllPlayersInGame(gameId);
 
-      console.log(`Starting game with id of ${gameId}`);
+      console.log(`Starting game with id of${gameId}`);
 
       io.in(gameId).emit("gameStartedEvent", { playersInGameAfterChange });
     });
@@ -131,8 +139,24 @@ export default app => {
       socket.join(gameId);
       const playersInGame = getAllPlayersInGame(gameId);
       console.log(playersInGame);
-      
-      io.in(gameId).emit("playersInGame", { playersInGame });
+
+      io.in(gameId).emit(PLAYERS_IN_GAME_RESPONSE, { playersInGame });
+    });
+
+    socket.on(SET_PLAYER_TURN_STATUS_TO_ACTIVE, (data: any) => {
+      const playerFromRequest = data.query.player as Player;
+      const gameId = data.query.gameId as number;
+
+      console.log(`Changing ${playerFromRequest.userName}'s in game ${gameId} status to active`);
+
+      setPlayerTurnStatus(playerFromRequest, "active");
+
+      const playersInGame = getAllPlayersInGame(gameId);
+      const player = getPlayerByUserName(playerFromRequest.userName);
+
+      //* emit message to all users that the player's turn is active
+      io.in(gameId).emit(PLAYERS_IN_GAME_RESPONSE, { playersInGame });
+      io.in(gameId).emit(CHANGE_TURN_STATUS_FOR_PLAYER, { player, turnStatus: "active" });
     });
 
     // Disconnect , when user leaves game

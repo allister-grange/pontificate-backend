@@ -5,7 +5,7 @@ const users = [] as Player[];
 
 // Join user to chat
 function userJoin(id, userName, gameId) {
-  const user = { id, userName, gameId, isReady: false, points: 0, turnStatus: "waiting" as TurnStatusOptions};
+  const user = { id, userName, gameId, isReady: false, points: 0, turnStatus: "waiting" as TurnStatusOptions };
 
   users.push(user);
 
@@ -16,7 +16,7 @@ function getCurrentUser(id: string) {
   return users.find((user) => user.id === id);
 }
 
-function getUserByUserName(userName: string) {
+function getPlayerByUserName(userName: string): Player {
   return users.find((user) => user.userName === userName);
 }
 
@@ -37,9 +37,25 @@ function setPointsOfPlayer(userName: string, points: number) {
     console.error("ERROR: Incorrect arguments passed to setPointsOfPlayer");
     return;
   }
-  let user = getUserByUserName(userName);
+  let user = getPlayerByUserName(userName);
   if (user) {
     user.points = points;
+  }
+}
+
+function setPlayerTurnStatus(player: Player, turnStatus: TurnStatusOptions) {
+  if (!player || !turnStatus) {
+    console.error("ERROR: Incorrect arguments passed to setPlayerTurnStatus");
+    return;
+  }
+
+  const playerInGame = getPlayerByUserName(player.userName);
+
+  if (playerInGame) {
+    playerInGame.turnStatus = turnStatus;
+  }
+  else {
+    console.error(`No user found in game ${playerInGame.gameId} with username ${playerInGame.userName}`)
   }
 }
 
@@ -67,6 +83,7 @@ module.exports = {
   getAllPlayersInGame,
   setPlayerReadyStatus,
   setPointsOfPlayer,
-  getUserByUserName,
-  changePlayerTurnStatus
+  getPlayerByUserName,
+  changePlayerTurnStatus,
+  setPlayerTurnStatus
 };
