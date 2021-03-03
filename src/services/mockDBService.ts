@@ -43,13 +43,13 @@ function setPointsOfPlayer(userName: string, points: number) {
   }
 }
 
-function setPlayerTurnStatus(player: Player, turnStatus: TurnStatusOptions) {
-  if (!player || !turnStatus) {
+function setPlayerTurnStatus(playerUserName: string, turnStatus: TurnStatusOptions) {
+  if (!playerUserName || !turnStatus) {
     console.error("ERROR: Incorrect arguments passed to setPlayerTurnStatus");
     return;
   }
 
-  const playerInGame = getPlayerByUserName(player.userName);
+  const playerInGame = getPlayerByUserName(playerUserName);
 
   if (playerInGame) {
     playerInGame.turnStatus = turnStatus;

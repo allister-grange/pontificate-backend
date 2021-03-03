@@ -7,8 +7,10 @@ const { getCurrentUser, userLeave, userJoin, getPlayerByUserName, setPlayerTurnS
 const GET_CURRENT_PLAYERS_IN_GAME_EVENT = "getCurrentPlayersInGameEvent";
 const PLAYERS_IN_GAME_RESPONSE = "playersInGame"
 const ADD_POINT_TO_PLAYER_EVENT = "addPointToPlayerEvent"
+const POINTS_ADDED_TO_PLAYER_RESPONSE = "pointsAddedToPlayerResponse"
 const CHANGE_TURN_STATUS_FOR_PLAYER = "changeTurnStatusForPlayer"
 const SET_PLAYER_TURN_STATUS_TO_ACTIVE = "setPlayerTurnStatusToActive"
+const SET_PLAYER_TURN_STATUS_TO_WAITING = "setPlayerTurnStatusToWaiting"
 
 export default app => {
 
@@ -143,13 +145,14 @@ export default app => {
       io.in(gameId).emit(PLAYERS_IN_GAME_RESPONSE, { playersInGame });
     });
 
+    //todo merge the two methods below into one?
     socket.on(SET_PLAYER_TURN_STATUS_TO_ACTIVE, (data: any) => {
       const playerFromRequest = data.query.player as Player;
       const gameId = data.query.gameId as number;
 
       console.log(`Changing ${playerFromRequest.userName}'s in game ${gameId} status to active`);
 
-      setPlayerTurnStatus(playerFromRequest, "active");
+      setPlayerTurnStatus(playerFromRequest.userName, "active");
 
       const playersInGame = getAllPlayersInGame(gameId);
       const player = getPlayerByUserName(playerFromRequest.userName);
@@ -157,6 +160,22 @@ export default app => {
       //* emit message to all users that the player's turn is active
       io.in(gameId).emit(PLAYERS_IN_GAME_RESPONSE, { playersInGame });
       io.in(gameId).emit(CHANGE_TURN_STATUS_FOR_PLAYER, { player, turnStatus: "active" });
+    });
+
+    socket.on(SET_PLAYER_TURN_STATUS_TO_WAITING, (data: any) => {
+      const playerUserNameFromRequest = data.query.userName as string;
+      const gameId = data.query.gameId as number;
+
+      console.log(`Changing ${playerUserNameFromRequest}'s in game ${gameId} status to waiting`);
+
+      setPlayerTurnStatus(playerUserNameFromRequest, "waiting");
+
+      const playersInGame = getAllPlayersInGame(gameId);
+      const player = getPlayerByUserName(playerUserNameFromRequest);
+
+      //* emit message to all users that the player's turn is active
+      io.in(gameId).emit(PLAYERS_IN_GAME_RESPONSE, { playersInGame });
+      io.in(gameId).emit(CHANGE_TURN_STATUS_FOR_PLAYER, { player, turnStatus: "waiting" });
     });
 
     // Disconnect , when user leaves game
