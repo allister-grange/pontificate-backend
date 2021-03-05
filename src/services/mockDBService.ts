@@ -4,7 +4,7 @@ import { Player, TurnStatusOptions } from "../types";
 const users = [] as Player[];
 
 // Join user to chat
-function userJoin(id, userName, gameId) {
+export function userJoin(id: string, userName: string, gameId: string) {
   const user = { id, userName, gameId, isReady: false, points: 0, turnStatus: "waiting" as TurnStatusOptions };
 
   users.push(user);
@@ -12,15 +12,15 @@ function userJoin(id, userName, gameId) {
   return user;
 }
 
-function getCurrentUser(id: string) {
+export function getCurrentUser(id: string) {
   return users.find((user) => user.id === id);
 }
 
-function getPlayerByUserName(userName: string): Player {
+export function getPlayerByUserName(userName: string): Player {
   return users.find((user) => user.userName === userName);
 }
 
-function setPlayerReadyStatus(id: string, isPlayerReady: boolean) {
+export function setPlayerReadyStatus(id: string, isPlayerReady: boolean) {
   if (!id || isPlayerReady === undefined) {
     console.error("ERROR: Incorrect arguments passed to setPlayerReadyStatus");
     console.error(`ID is ${id}, isPlayerReady is ${isPlayerReady}`);
@@ -32,7 +32,7 @@ function setPlayerReadyStatus(id: string, isPlayerReady: boolean) {
   }
 }
 
-function setPointsOfPlayer(userName: string, points: number) {
+export function setPointsOfPlayer(userName: string, points: number) {
   if (!userName || !points) {
     console.error("ERROR: Incorrect arguments passed to setPointsOfPlayer");
     return;
@@ -43,7 +43,7 @@ function setPointsOfPlayer(userName: string, points: number) {
   }
 }
 
-function setPlayerTurnStatus(playerUserName: string, turnStatus: TurnStatusOptions) {
+export function setPlayerTurnStatus(playerUserName: string, turnStatus: TurnStatusOptions) {
   if (!playerUserName || !turnStatus) {
     console.error("ERROR: Incorrect arguments passed to setPlayerTurnStatus");
     return;
@@ -59,12 +59,12 @@ function setPlayerTurnStatus(playerUserName: string, turnStatus: TurnStatusOptio
   }
 }
 
-function getAllPlayersInGame(gameId: string): Player[] {
+export function getAllPlayersInGame(gameId: string): Player[] {
   return users.filter((user) => user.gameId === gameId);
 }
 
 // User leaves chat
-function userLeave(id: string) {
+export function userLeave(id: string) {
   const index = users.findIndex((user) => user.id === id);
 
   if (index !== -1) {
@@ -72,18 +72,6 @@ function userLeave(id: string) {
   }
 }
 
-function changePlayerTurnStatus(player: Player, status: TurnStatusOptions) {
+export function changePlayerTurnStatus(player: Player, status: TurnStatusOptions) {
   users.find(toFind => toFind.id === player.id).turnStatus = status;
 }
-
-module.exports = {
-  userJoin,
-  getCurrentUser,
-  userLeave,
-  getAllPlayersInGame,
-  setPlayerReadyStatus,
-  setPointsOfPlayer,
-  getPlayerByUserName,
-  changePlayerTurnStatus,
-  setPlayerTurnStatus
-};

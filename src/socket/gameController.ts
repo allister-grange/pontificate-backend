@@ -1,7 +1,9 @@
 import { Player, TurnStatusOptions } from "../types";
 
-const { getCurrentUser, userLeave, userJoin, getPlayerByUserName, setPlayerTurnStatus,
-  getAllPlayersInGame, setPlayerReadyStatus, setPointsOfPlayer, changePlayerTurnStatus } = require("../services/mockDBService");
+import {
+  getCurrentUser, userLeave, userJoin, getPlayerByUserName, setPlayerTurnStatus,
+  getAllPlayersInGame, setPlayerReadyStatus, setPointsOfPlayer, changePlayerTurnStatus
+} from "../services/mockDBService";
 
 
 const GET_CURRENT_PLAYERS_IN_GAME_EVENT = "getCurrentPlayersInGameEvent";
@@ -112,7 +114,7 @@ export default app => {
       }
 
       const playersInGame = getAllPlayersInGame(gameId);
-      //get random player to start the game
+      //set random player to be ready in the game, they will start first
       const player = playersInGame[Math.floor(Math.random() * playersInGame.length)];
       changePlayerTurnStatus(player, "ready");
       //todo clean this up, think of a better way, don't need to access twice
@@ -146,19 +148,33 @@ export default app => {
 
     socket.on(SET_PLAYER_TURN_STATUS, (data: any) => {
       const playerUserNameFromRequest = data.query.userName as string;
-      const gameId = data.query.gameId as number;
+      const gameId = data.query.gameId as string;
       const turnStatus = data.query.turnStatus as TurnStatusOptions;
-
-      console.log(`Changing ${playerUserNameFromRequest}'s in game ${gameId} status to ${turnStatus}`);
-
-      setPlayerTurnStatus(playerUserNameFromRequest, turnStatus);
 
       const playersInGame = getAllPlayersInGame(gameId);
       const player = getPlayerByUserName(playerUserNameFromRequest);
+      const nextPlayerToTakeTurn = findNextPlayerToTakeTurn(playersInGame, player);
 
+      console.log(`Changing ${playerUserNameFromRequest} in game ${gameId} status to ${turnStatus}`);
+
+      setPlayerTurnStatus(playerUserNameFromRequest, turnStatus);
+      if(nextPlayerToTakeTurn) {
+        setPlayerTurnStatus(nextPlayerToTakeTurn.userName, 'ready');
+      }
+
+      //todo print these out and see if they're necessary
+      const playersInGamePostChange = getAllPlayersInGame(gameId);
+      const playerPostChange = getPlayerByUserName(playerUserNameFromRequest);
+
+      //* if someone's status changed from 'active' to 'waiting', set up the next person to play  
+      if (nextPlayerToTakeTurn) {
+        console.log(`next player to take a turn is ${nextPlayerToTakeTurn.userName}`);
+        io.in(gameId).emit(CHANGE_TURN_STATUS_FOR_PLAYER, { player: nextPlayerToTakeTurn, turnStatus: 'ready' });
+      }
+      
       //* emit message to all users that the player's turn status has changed
-      io.in(gameId).emit(PLAYERS_IN_GAME_RESPONSE, { playersInGame });
-      io.in(gameId).emit(CHANGE_TURN_STATUS_FOR_PLAYER, { player, turnStatus: turnStatus });
+      io.in(gameId).emit(PLAYERS_IN_GAME_RESPONSE, { playersInGame: playersInGamePostChange });
+      io.in(gameId).emit(CHANGE_TURN_STATUS_FOR_PLAYER, { player: playerPostChange, turnStatus: turnStatus });
     });
 
     // Disconnect , when user leaves game
@@ -181,6 +197,31 @@ export default app => {
 
   const gameExists = (gameId: string) => {
     return io.sockets.adapter.rooms.get(gameId);
+  }
+
+  const allPlayersWaiting = (players: Player[]): boolean => {
+    return players.findIndex(toFind => toFind.turnStatus !== 'waiting') !== -1;
+  }
+
+  const findNextPlayerToTakeTurn = (playersInGame: Player[], player: Player): Player => {
+
+    //only need to set a next player to take a turn if the current player is active and changing to 'waiting'
+    console.log(`current player is ${player.userName}`);
+    if (player.turnStatus === 'active') {
+
+      const indexOfPlayer = playersInGame.findIndex(toFind => toFind.userName === player.userName);
+      console.log(`index of player ${indexOfPlayer}`);
+      console.log(`index of player I shall return ${indexOfPlayer + 1}`);
+
+      // if the user is at the end of the array, give back the first player
+      if (indexOfPlayer >= playersInGame.length - 1) {        
+        return playersInGame[0]
+      }
+      else {
+        return playersInGame[indexOfPlayer + 1]
+      }
+    }
+
   }
 
 }
