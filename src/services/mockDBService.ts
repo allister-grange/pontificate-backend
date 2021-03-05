@@ -48,6 +48,24 @@ export function setPointsOfPlayer(userName: string, points: number) {
   }
 }
 
+export function setRandomPlayerCategory(userName: string) {
+  if (!userName) {
+    console.error("ERROR: Incorrect arguments passed to setPlayerCategory");
+    return;
+  }
+  let user = getPlayerByUserName(userName);
+
+  //make sure the player can't have the same category twice in a row
+  let category = CategoryList[Math.floor(Math.random() * CategoryList.length)] as Category;
+  while(category === user.category) {
+    category = CategoryList[Math.floor(Math.random() * CategoryList.length)] as Category;
+  }
+  
+  if (user) {
+    user.category = category;
+  }
+}
+
 export function setPlayerTurnStatus(playerUserName: string, turnStatus: TurnStatusOptions) {
   if (!playerUserName || !turnStatus) {
     console.error("ERROR: Incorrect arguments passed to setPlayerTurnStatus");

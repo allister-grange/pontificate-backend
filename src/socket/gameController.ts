@@ -2,7 +2,8 @@ import { Player, TurnStatusOptions } from "../types";
 
 import {
   getCurrentUser, userLeave, userJoin, getPlayerByUserName, setPlayerTurnStatus,
-  getAllPlayersInGame, setPlayerReadyStatus, setPointsOfPlayer, changePlayerTurnStatus
+  getAllPlayersInGame, setPlayerReadyStatus, setPointsOfPlayer, changePlayerTurnStatus,
+  setRandomPlayerCategory
 } from "../services/mockDBService";
 
 
@@ -169,6 +170,7 @@ export default app => {
       //* if someone's status changed from 'active' to 'waiting', set up the next person to play  
       if (nextPlayerToTakeTurn) {
         console.log(`next player to take a turn is ${nextPlayerToTakeTurn.userName}`);
+        setRandomPlayerCategory(playerUserNameFromRequest);
         io.in(gameId).emit(CHANGE_TURN_STATUS_FOR_PLAYER, { player: nextPlayerToTakeTurn, turnStatus: 'ready' });
       }
       
@@ -221,7 +223,6 @@ export default app => {
         return playersInGame[indexOfPlayer + 1]
       }
     }
-
   }
 
 }
