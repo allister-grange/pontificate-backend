@@ -1,11 +1,16 @@
-import { Player, TurnStatusOptions } from "../types";
+import { Player, TurnStatusOptions, Category, CategoryList } from "../types";
 
 // TODO need to replace this with some sort of db
 const users = [] as Player[];
 
 // Join user to chat
 export function userJoin(id: string, userName: string, gameId: string) {
-  const user = { id, userName, gameId, isReady: false, points: 0, turnStatus: "waiting" as TurnStatusOptions };
+  let user = {
+    id, userName, gameId, isReady: false,
+    points: 0, turnStatus: 'waiting' as TurnStatusOptions
+  } as Player;
+
+  user.category = CategoryList[Math.floor(Math.random() * CategoryList.length)] as Category;
 
   users.push(user);
 
