@@ -18,7 +18,7 @@ export default app => {
 
   const io = require("socket.io")(app, {
     cors: {
-      origin: "http://localhost:3005",
+      origin: ['http://localhost:3005','http://192.168.1.84:3005'],
       methods: ["GET", "POST"]
     }
   });
