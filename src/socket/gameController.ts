@@ -14,11 +14,17 @@ const POINTS_ADDED_TO_PLAYER_RESPONSE = "pointsAddedToPlayerResponse"
 const CHANGE_TURN_STATUS_FOR_PLAYER = "changeTurnStatusForPlayer"
 const SET_PLAYER_TURN_STATUS = "setPlayerTurnStatus"
 
+const DOES_GAME_EXIST_EVENT = "doesGameExistEvent";
+const DOES_GAME_EXIST_RES = "doesGameExistRes";
+const DOES_USERNAME_EXIST_EVENT = "doesUserNameExistEvent";
+const DOES_USERNAME_EXIST_RES = "doesUserNameExistRes";
+
+
 export default app => {
 
   const io = require("socket.io")(app, {
     cors: {
-      origin: ['http://localhost:3005','http://192.168.1.84:3005'],
+      origin: ['http://localhost:3005', 'http://192.168.1.84:3005'],
       methods: ["GET", "POST"]
     }
   });
@@ -159,7 +165,7 @@ export default app => {
       console.log(`Changing ${playerUserNameFromRequest} in game ${gameId} status to ${turnStatus}`);
 
       setPlayerTurnStatus(playerUserNameFromRequest, turnStatus);
-      if(nextPlayerToTakeTurn) {
+      if (nextPlayerToTakeTurn) {
         setPlayerTurnStatus(nextPlayerToTakeTurn.userName, 'ready');
       }
 
@@ -173,10 +179,37 @@ export default app => {
         setRandomPlayerCategory(playerUserNameFromRequest);
         io.in(gameId).emit(CHANGE_TURN_STATUS_FOR_PLAYER, { player: nextPlayerToTakeTurn, turnStatus: 'ready' });
       }
-      
+
       //* emit message to all users that the player's turn status has changed
       io.in(gameId).emit(PLAYERS_IN_GAME_RESPONSE, { playersInGame: playersInGamePostChange });
       io.in(gameId).emit(CHANGE_TURN_STATUS_FOR_PLAYER, { player: playerPostChange, turnStatus: turnStatus });
+    });
+
+    socket.on(DOES_GAME_EXIST_EVENT, (data: any) => {
+      const gameId = data.query.gameId as string;
+      const gameExistsRes = gameExists(gameId);
+
+      console.log(`Does game exist triggered ${gameId};${gameExistsRes}`);
+
+      socket.emit(DOES_GAME_EXIST_RES, { gameExists: gameExistsRes });
+    });
+
+    socket.on(DOES_USERNAME_EXIST_EVENT, (data: any) => {
+      const gameId = data.query.gameId as string;
+      const userName = data.query.userName as string;
+
+      console.log(`Does username exist triggered ${gameId};${userName}`);
+
+      const playersInGame = getAllPlayersInGame(gameId);
+      let userNameExistsInGame = false;
+
+      playersInGame.forEach((player) => {
+        if(player.userName === userName){
+          userNameExistsInGame = true;
+        }
+      });
+
+      socket.emit(DOES_USERNAME_EXIST_RES, { userNameExists: userNameExistsInGame });
     });
 
     // Disconnect , when user leaves game
@@ -197,7 +230,11 @@ export default app => {
 
   });
 
-  const gameExists = (gameId: string) => {
+  const gameExists = (gameId: string): boolean => {
+    return io.sockets.adapter.rooms.get(gameId);
+  }
+
+  const check = (gameId: string): boolean => {
     return io.sockets.adapter.rooms.get(gameId);
   }
 
@@ -216,7 +253,7 @@ export default app => {
       console.log(`index of player I shall return ${indexOfPlayer + 1}`);
 
       // if the user is at the end of the array, give back the first player
-      if (indexOfPlayer >= playersInGame.length - 1) {        
+      if (indexOfPlayer >= playersInGame.length - 1) {
         return playersInGame[0]
       }
       else {
