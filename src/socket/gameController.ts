@@ -201,15 +201,17 @@ export default app => {
       console.log(`Does username exist triggered ${gameId};${userName}`);
 
       const playersInGame = getAllPlayersInGame(gameId);
-      let userNameExistsInGame = false;
+      let userNameIsFreeInGame = true;
 
       playersInGame.forEach((player) => {
         if(player.userName === userName){
-          userNameExistsInGame = true;
+          userNameIsFreeInGame = false;
         }
       });
 
-      socket.emit(DOES_USERNAME_EXIST_RES, { userNameExists: userNameExistsInGame });
+      console.log(`Does username exists is ${userNameIsFreeInGame}`);
+      
+      socket.emit(DOES_USERNAME_EXIST_RES, { userNameIsFree: userNameIsFreeInGame });
     });
 
     // Disconnect , when user leaves game
