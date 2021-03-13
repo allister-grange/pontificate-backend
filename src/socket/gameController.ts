@@ -1,7 +1,7 @@
 import { Player, TurnStatusOptions } from "../types";
 
 import {
-  getCurrentUser, userLeave, userJoin, getPlayerByUserName, setPlayerTurnStatus,
+  getCurrentPlayer, kickPlayerFromGame, joinPlayer, getPlayerByUserName, setPlayerTurnStatus,
   getAllPlayersInGame, setPlayerReadyStatus, setPointsOfPlayer, changePlayerTurnStatus,
   setRandomPlayerCategory
 } from "../services/mockDBService";
@@ -29,8 +29,6 @@ export default app => {
     }
   });
 
-  //can store players in an array for now 
-  //https://github.com/RishabhVerma098/gameappBackend/blob/master/server.js
   io.on("connection", async (socket) => {
 
     console.log("New connection");
@@ -52,60 +50,60 @@ export default app => {
         return;
       }
 
-      //* create user and put into temp storage (object for now, db soon)
-      const user = userJoin(socket.id, userName, gameId);
+      //* create player and put into temp storage (object for now, db soon)
+      const player = joinPlayer(socket.id, userName, gameId);
 
-      socket.join(user.gameId);
+      socket.join(player.gameId);
       const playersInGame = getAllPlayersInGame(gameId);
       console.log('Game ' + gameId + ' had player ' + userName + ' join');
 
       io.in(gameId).emit("newPlayerLobbyEvent", {
-        userId: user.id,
-        userName: user.userName,
-        text: `${user.userName} has joined the game`,
+        userId: player.id,
+        userName: player.userName,
+        text: `${player.userName} has joined the game`,
         playersInGame: playersInGame
       });
     });
 
     socket.on("playerReadyEvent", data => {
-      //* get user
-      const user = getCurrentUser(socket.id);
+      //* get player
+      const player = getCurrentPlayer(socket.id);
       const { isPlayerReady } = data.query;
 
-      if (!user) {
-        console.error(`No user found with socket id of ${socket.id}`);
+      if (!player) {
+        console.error(`No player found with socket id of ${socket.id}`);
         return;
       }
 
       setPlayerReadyStatus(socket.id, isPlayerReady);
 
-      console.log(`${user.userName} is now set to ready status ${user.isReady} in game ${user.gameId}`);
-      const playersInGame = getAllPlayersInGame(user.gameId);
+      console.log(`${player.userName} is now set to ready status ${player.isReady} in game ${player.gameId}`);
+      const playersInGame = getAllPlayersInGame(player.gameId);
 
       //* emit message to all users that the player is ready
-      io.in(user.gameId).emit("playerReadyEvent", {
+      io.in(player.gameId).emit("playerReadyEvent", {
         playersInGame
       });
 
     });
 
     socket.on("addPointToPlayerEvent", data => {
-      //* get user
+      //* get player
       const { points, userName } = data.query;
-      const user = getPlayerByUserName(userName);
+      const player = getPlayerByUserName(userName);
 
-      if (!user) {
-        console.error(`No user found with username of ${userName}`);
+      if (!player) {
+        console.error(`No player found with username of ${userName}`);
         return;
       }
 
-      setPointsOfPlayer(user.userName, points);
+      setPointsOfPlayer(player.userName, points);
 
-      console.log(`${user.userName} now has ${user.points} points in game ${user.gameId}`);
-      const playersInGame = getAllPlayersInGame(user.gameId);
+      console.log(`${player.userName} now has ${player.points} points in game ${player.gameId}`);
+      const playersInGame = getAllPlayersInGame(player.gameId);
 
       //* emit message to all users that the player is ready
-      io.in(user.gameId).emit(PLAYERS_IN_GAME_RESPONSE, {
+      io.in(player.gameId).emit(PLAYERS_IN_GAME_RESPONSE, {
         playersInGame
       });
     });
@@ -214,18 +212,18 @@ export default app => {
       socket.emit(DOES_USERNAME_EXIST_RES, { userNameIsFree: userNameIsFreeInGame });
     });
 
-    // Disconnect , when user leaves game
+    // Disconnect , when player leaves game
     socket.on("disconnect", () => {
-      // delete user from users & emit that user has left the game
-      const user = userLeave(socket.id);
+      // delete player from users & emit that player has left the game
+      const player = kickPlayerFromGame(socket.id);
 
-      if (user) {
-        console.log(`User ${user.userName} left the game`);
+      if (player) {
+        console.log(`player ${player.userName} left the game`);
 
-        io.to(user.gameId).emit("message", {
-          userId: user.id,
-          userName: user.userName,
-          text: `${user.userName} has left the game`,
+        io.to(player.gameId).emit("message", {
+          userId: player.id,
+          userName: player.userName,
+          text: `${player.userName} has left the game`,
         });
       }
     });
@@ -234,14 +232,6 @@ export default app => {
 
   const gameExists = (gameId: string): boolean => {
     return io.sockets.adapter.rooms.get(gameId);
-  }
-
-  const check = (gameId: string): boolean => {
-    return io.sockets.adapter.rooms.get(gameId);
-  }
-
-  const allPlayersWaiting = (players: Player[]): boolean => {
-    return players.findIndex(toFind => toFind.turnStatus !== 'waiting') !== -1;
   }
 
   const findNextPlayerToTakeTurn = (playersInGame: Player[], player: Player): Player => {
@@ -254,7 +244,7 @@ export default app => {
       console.log(`index of player ${indexOfPlayer}`);
       console.log(`index of player I shall return ${indexOfPlayer + 1}`);
 
-      // if the user is at the end of the array, give back the first player
+      // if the player is at the end of the array, give back the first player
       if (indexOfPlayer >= playersInGame.length - 1) {
         return playersInGame[0]
       }

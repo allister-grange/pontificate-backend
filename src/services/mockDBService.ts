@@ -1,28 +1,28 @@
 import { Player, TurnStatusOptions, Category, CategoryList } from "../types";
 
 // TODO need to replace this with some sort of db
-const users = [] as Player[];
+const players = [] as Player[];
 
-// Join user to chat
-export function userJoin(id: string, userName: string, gameId: string) {
-  let user = {
+// Join player to chat
+export function joinPlayer(id: string, userName: string, gameId: string): Player {
+  let player = {
     id, userName, gameId, isReady: false,
     points: 0, turnStatus: 'waiting' as TurnStatusOptions
   } as Player;
 
-  user.category = CategoryList[Math.floor(Math.random() * CategoryList.length)] as Category;
+  player.category = CategoryList[Math.floor(Math.random() * CategoryList.length)] as Category;
 
-  users.push(user);
+  players.push(player);
 
-  return user;
+  return player;
 }
 
-export function getCurrentUser(id: string) {
-  return users.find((user) => user.id === id);
+export function getCurrentPlayer(id: string) {
+  return players.find((player) => player.id === id);
 }
 
 export function getPlayerByUserName(userName: string): Player {
-  return users.find((user) => user.userName === userName);
+  return players.find((player) => player.userName === userName);
 }
 
 export function setPlayerReadyStatus(id: string, isPlayerReady: boolean) {
@@ -31,9 +31,9 @@ export function setPlayerReadyStatus(id: string, isPlayerReady: boolean) {
     console.error(`ID is ${id}, isPlayerReady is ${isPlayerReady}`);
     return;
   }
-  let user = getCurrentUser(id);
-  if (user) {
-    user.isReady = isPlayerReady;
+  let player = getCurrentPlayer(id);
+  if (player) {
+    player.isReady = isPlayerReady;
   }
 }
 
@@ -42,9 +42,9 @@ export function setPointsOfPlayer(userName: string, points: number) {
     console.error("ERROR: Incorrect arguments passed to setPointsOfPlayer");
     return;
   }
-  let user = getPlayerByUserName(userName);
-  if (user) {
-    user.points = points;
+  let player = getPlayerByUserName(userName);
+  if (player) {
+    player.points = points;
   }
 }
 
@@ -53,16 +53,16 @@ export function setRandomPlayerCategory(userName: string) {
     console.error("ERROR: Incorrect arguments passed to setPlayerCategory");
     return;
   }
-  let user = getPlayerByUserName(userName);
+  let player = getPlayerByUserName(userName);
 
   //make sure the player can't have the same category twice in a row
   let category = CategoryList[Math.floor(Math.random() * CategoryList.length)] as Category;
-  while(category === user.category) {
+  while(category === player.category) {
     category = CategoryList[Math.floor(Math.random() * CategoryList.length)] as Category;
   }
   
-  if (user) {
-    user.category = category;
+  if (player) {
+    player.category = category;
   }
 }
 
@@ -83,18 +83,18 @@ export function setPlayerTurnStatus(playerUserName: string, turnStatus: TurnStat
 }
 
 export function getAllPlayersInGame(gameId: string): Player[] {
-  return users.filter((user) => user.gameId === gameId);
+  return players.filter((player) => player.gameId === gameId);
 }
 
-// User leaves chat
-export function userLeave(id: string) {
-  const index = users.findIndex((user) => user.id === id);
+// Player leaves chat
+export function kickPlayerFromGame(id: string) {
+  const index = players.findIndex((player) => player.id === id);
 
   if (index !== -1) {
-    return users.splice(index, 1)[0];
+    return players.splice(index, 1)[0];
   }
 }
 
 export function changePlayerTurnStatus(player: Player, status: TurnStatusOptions) {
-  users.find(toFind => toFind.id === player.id).turnStatus = status;
+  players.find(toFind => toFind.id === player.id).turnStatus = status;
 }

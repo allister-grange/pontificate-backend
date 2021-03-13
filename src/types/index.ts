@@ -5,7 +5,13 @@ export type Player = {
   isReady: boolean,
   points: number,
   turnStatus: TurnStatusOptions,
-  category: Category
+  category: Category,
+  game: Game
+}
+
+export type Game = {
+  players: Array<Player>,
+  maxPointsForGame: number
 }
 
 export type TurnStatusOptions = 'ready'|'active'|'waiting'
