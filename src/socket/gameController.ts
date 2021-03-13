@@ -6,19 +6,19 @@ import {
   setRandomPlayerCategory
 } from "../services/mockDBService";
 
-
-const GET_CURRENT_PLAYERS_IN_GAME_EVENT = "getCurrentPlayersInGameEvent";
 const PLAYERS_IN_GAME_RESPONSE = "playersInGame"
 const ADD_POINT_TO_PLAYER_EVENT = "addPointToPlayerEvent"
-const POINTS_ADDED_TO_PLAYER_RESPONSE = "pointsAddedToPlayerResponse"
 const CHANGE_TURN_STATUS_FOR_PLAYER = "changeTurnStatusForPlayer"
 const SET_PLAYER_TURN_STATUS = "setPlayerTurnStatus"
+const CREATE_NEW_LOBBY_EVENT = "createNewLobbyEvent";
+const PLAYER_READY_EVENT = "playerReadyEvent";
 
 const DOES_GAME_EXIST_EVENT = "doesGameExistEvent";
 const DOES_GAME_EXIST_RES = "doesGameExistRes";
 const DOES_USERNAME_EXIST_EVENT = "doesUserNameExistEvent";
 const DOES_USERNAME_EXIST_RES = "doesUserNameExistRes";
-
+const START_NEW_GAME_EVENT = "startNewGameEvent";
+const GET_CURRENT_PLAYERS_IN_GAME_EVENT = "getCurrentPlayersInGameEvent";
 
 export default app => {
 
@@ -33,7 +33,7 @@ export default app => {
 
     console.log("New connection");
 
-    socket.on("createNewLobbyEvent", data => {
+    socket.on(CREATE_NEW_LOBBY_EVENT, data => {
       const { gameId } = data.query;
       console.log(`Creating a new game with id of ${gameId}`);
       socket.join(gameId);
@@ -65,7 +65,7 @@ export default app => {
       });
     });
 
-    socket.on("playerReadyEvent", data => {
+    socket.on(PLAYER_READY_EVENT, data => {
       //* get player
       const player = getCurrentPlayer(socket.id);
       const { isPlayerReady } = data.query;
@@ -87,7 +87,7 @@ export default app => {
 
     });
 
-    socket.on("addPointToPlayerEvent", data => {
+    socket.on(ADD_POINT_TO_PLAYER_EVENT, data => {
       //* get player
       const { points, userName } = data.query;
       const player = getPlayerByUserName(userName);
@@ -108,7 +108,7 @@ export default app => {
       });
     });
 
-    socket.on("startNewGameEvent", (data: any) => {
+    socket.on(START_NEW_GAME_EVENT, (data: any) => {
 
       const { gameId } = data.query;
 
@@ -130,7 +130,7 @@ export default app => {
       io.in(gameId).emit("gameStartedEvent", { playersInGameAfterChange });
     });
 
-    socket.on("getCurrentPlayersInGameEvent", (data: any) => {
+    socket.on(GET_CURRENT_PLAYERS_IN_GAME_EVENT, (data: any) => {
 
       const { gameId } = data.query;
 
