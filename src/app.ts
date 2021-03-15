@@ -1,7 +1,7 @@
 import express from 'express';
 const http = require('http');
 
-import { socket } from './socket';
+import { socket } from './controllers/socket';
 const PORT = process.env.PORT || 3000;
 const index = require("./routes/index");
 
