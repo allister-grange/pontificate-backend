@@ -1,14 +1,16 @@
 import { CHANGE_TURN_STATUS_FOR_PLAYER, PLAYERS_IN_GAME_RESPONSE } from "../../constants/socketMessages";
-import { getAllPlayersInGame, getCurrentPlayer, getPlayerByUserName, setPlayerReadyStatus, setPlayerTurnStatus, setRandomPlayerCategory } from "../../services/mockDBService";
+import { createGame, getAllPlayersInGame, getCurrentPlayer, getPlayerByUserName, setPlayerReadyStatus, setPlayerTurnStatus, setRandomPlayerCategory } from "../../services/mockDBService";
 import { Player, TurnStatusOptions } from "../../types";
 
 export const createNewLobbyEvent = (socket: any, data: any) => {
   if (!data){
     return
   }
-  
-  const { gameId } = data.query;
+
+  const { gameId, pointsToWin } = data.query;
+
   console.log(`Creating a new game with id of ${gameId}`);
+  createGame(gameId, pointsToWin);
   socket.join(gameId);
 }
 

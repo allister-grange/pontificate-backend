@@ -11,4 +11,5 @@ export const DOES_USERNAME_EXIST_RES = "doesUserNameExistRes";
 export const START_NEW_GAME_EVENT = "startNewGameEvent";
 export const GET_CURRENT_PLAYERS_IN_GAME_EVENT = "getCurrentPlayersInGameEvent";
 export const NEW_PLAYER_LOBBY_EVENT = "newPlayerLobbyEvent";
+export const GAME_OVER_RES = "gameOverRes";
 export const DISCONNECT = "disconnect";

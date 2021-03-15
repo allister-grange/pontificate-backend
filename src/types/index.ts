@@ -11,7 +11,8 @@ export type Player = {
 
 export type Game = {
   players: Array<Player>,
-  maxPointsForGame: number
+  gameId: string,
+  pointsToWin: number
 }
 
 export type TurnStatusOptions = 'ready'|'active'|'waiting'

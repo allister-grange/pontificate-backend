@@ -1,7 +1,8 @@
-import { Player, TurnStatusOptions, Category, CategoryList } from "../types";
+import { Player, TurnStatusOptions, Category, CategoryList, Game } from "../types";
 
 // TODO need to replace this with some sort of db
 const players = [] as Player[];
+const games = [] as Game[];
 
 // Join player to chat
 export function joinPlayer(id: string, userName: string, gameId: string): Player {
@@ -13,8 +14,20 @@ export function joinPlayer(id: string, userName: string, gameId: string): Player
   player.category = CategoryList[Math.floor(Math.random() * CategoryList.length)] as Category;
 
   players.push(player);
+  const game = games.find(game => gameId === game.gameId);
+  if(game){
+    game.players.push(player);
+  }
 
   return player;
+}
+
+export function getGame(gameId: string): Game {
+  return games.find(game => game.gameId === gameId);
+}
+
+export function createGame(gameId: string, pointsToWin: number) {
+  games.push({players: [], gameId, pointsToWin});
 }
 
 export function getCurrentPlayer(id: string) {

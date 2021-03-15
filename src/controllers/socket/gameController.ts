@@ -1,7 +1,7 @@
-import { DOES_GAME_EXIST_RES, DOES_USERNAME_EXIST_RES, PLAYERS_IN_GAME_RESPONSE } from "../../constants/socketMessages";
+import { DOES_GAME_EXIST_RES, DOES_USERNAME_EXIST_RES, GAME_OVER_RES, PLAYERS_IN_GAME_RESPONSE } from "../../constants/socketMessages";
 import {
   kickPlayerFromGame, joinPlayer, getPlayerByUserName,
-  getAllPlayersInGame, setPointsOfPlayer, changePlayerTurnStatus
+  getAllPlayersInGame, setPointsOfPlayer, changePlayerTurnStatus, getGame
 } from "../../services/mockDBService";
 
 const gameExists = (io: any, gameId: string): boolean => {
@@ -99,14 +99,40 @@ export const addPointToPlayer = (io, socket, data) => {
   const { points, userName } = data.query;
   const player = getPlayerByUserName(userName);
 
+  if(!player){
+    console.error(`No player found with userName ${userName}`);
+  }
+  
+  //* if points are over the game limit then end the game
+  const game = getGame(player.gameId)
+  if(!game){
+    console.error(`No games found with gameId ${player.gameId}`);
+  }
+  let gameOver = false;  
+  game.players.forEach((player) => {    
+    if(points >= game.pointsToWin){
+      gameOver = true;
+      return;
+    }
+  });
+  
+  if (gameOver) {
+    console.log(`Hit the max point limit in game, ending game ${player.gameId}`);
+    io.in(player.gameId).emit(GAME_OVER_RES, {
+      gameId: player.gameId
+    });
+    return;
+  }
+
   if (!player) {
     console.error(`No player found with username of ${userName}`);
     return;
   }
 
   setPointsOfPlayer(player.userName, points);
-
+  
   console.log(`${player.userName} now has ${player.points} points in game ${player.gameId}`);
+  
   const playersInGame = getAllPlayersInGame(player.gameId);
 
   //* emit message to all users that the player is ready
@@ -116,6 +142,9 @@ export const addPointToPlayer = (io, socket, data) => {
 }
 
 export const startNewGameEvent = (io: any, socket: any, data: any) => {
+  if(!data){
+    return
+  }
   const { gameId } = data.query;
 
   if (!gameExists(io, gameId)) {
