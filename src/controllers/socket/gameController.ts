@@ -119,7 +119,7 @@ export const addPointToPlayer = (io, socket, data) => {
   if (gameOver) {
     console.log(`Hit the max point limit in game, ending game ${player.gameId}`);
     io.in(player.gameId).emit(GAME_OVER_RES, {
-      gameId: player.gameId
+      player
     });
     return;
   }
@@ -180,7 +180,6 @@ export const getCurrentPlayersInGameEvent = (io, socket, data) => {
   //as opposed to joining them into the room again when the game starts 
   socket.join(gameId);
   const playersInGame = getAllPlayersInGame(gameId);
-  console.log(playersInGame);
 
   io.in(gameId).emit(PLAYERS_IN_GAME_RESPONSE, { playersInGame });
 }
