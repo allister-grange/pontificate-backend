@@ -6,8 +6,8 @@ export default app => {
 
   const io = require("socket.io")(app, {
     cors: {
-      origin: ['http://localhost:3005', 'http://192.168.0.22:3005'],
-      methods: ["GET", "POST"]
+            origin: ['https://pontificate.click', 'https://www.pontificate.click', 'https://www.pontificate.click/', 'https://pontificate.click/', 'http://localhost:3005', 'http://192.168.0.22:3005'],
+	    methods: ["GET", "POST"]
     }
   });
 
