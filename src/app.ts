@@ -1,33 +1,19 @@
-// import express from 'express';
-// const http = require('http');
-
-// import { socket } from './controllers/socket';
-// const PORT = process.env.PORT || 3000;
-// const index = require("./routes/index");
-
-// const app = express();
-// app.use(index);
-
-// const server = http.createServer(app);
-// socket(server);
-
-// server.listen(PORT,'ec2-3-25-243-104.ap-southeast-2.compute.amazonaws.com' , () => console.log(`Listening on port ${PORT}`));
-
+import e from "express";
 import { socket } from "./controllers/socket";
 
-var fs = require('fs');
+let fs = require('fs');
 const PORT = process.env.PORT || 3000;
 
-var options = {
-  key: fs.readFileSync('privkey.pem'),
-  cert: fs.readFileSync('cert.pem')
-};
+let options = {};
 
-var server = require('https').createServer(options);
+if(process.env.ENV === 'prod'){
+  options = {
+    key: fs.readFileSync('privkey.pem'),
+    cert: fs.readFileSync('cert.pem')
+  };
+}
 
-socket(server)
-server.listen(PORT,'0.0.0.0' , () => console.log(`Listening on port ${PORT}`));
+let server = require('https').createServer(options);
 
-// var io = require('socket.io').listen(app);
-// app.listen(8150);
-
+socket(server);
+server.listen(PORT, () => console.log(`Listening on port ${PORT}`));
