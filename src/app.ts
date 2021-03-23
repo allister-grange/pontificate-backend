@@ -1,12 +1,12 @@
-import e from "express";
 import { socket } from "./controllers/socket";
+require('dotenv').config();
 
 let fs = require('fs');
-const PORT = process.env.PORT || 3000;
+const PORT = process.env['PORT'] || 3000;
 
 let options = {};
 
-if(process.env.ENV === 'prod'){
+if(process.env['ENV'] === 'prod'){
   options = {
     key: fs.readFileSync('privkey.pem'),
     cert: fs.readFileSync('cert.pem')
