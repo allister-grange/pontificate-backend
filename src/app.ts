@@ -13,7 +13,7 @@ if(process.env['ENV'] === 'prod'){
   };
 }
 
-let server = require('https').createServer(options);
+let server = process.env['ENV'] === 'prod' ? require('https').createServer(options) : require('http').createServer(options);
 
 socket(server);
 server.listen(PORT, () => console.log(`Listening on port ${PORT}`));
