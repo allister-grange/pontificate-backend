@@ -20,7 +20,7 @@ export const createNewLobbyEvent = (socket: any, data: any) => {
 
   const { gameId, pointsToWin } = data.query;
 
-  console.log(`Creating a new game with id of ${gameId}`);
+  console.log(`Creating a new game with id of ${gameId} and points to win of ${pointsToWin}`);
   createGame(gameId, pointsToWin);
   socket.join(gameId);
 };

@@ -24,7 +24,7 @@ export default (io) => {
     // player events
     socket.on(SOCKET_MESSAGES.PLAYER_READY_EVENT, (data) => playerReadyEvent(io, socket, data));
     socket.on(SOCKET_MESSAGES.ADD_POINT_TO_PLAYER_EVENT,
-      (data) => addPointToPlayer(io, socket, data));
+      (data) => addPointToPlayer(io, data));
     socket.on(SOCKET_MESSAGES.SET_PLAYER_TURN_STATUS,
       (data) => setPlayerTurnStatusInGame(io, socket, data));
   });
