@@ -20,7 +20,7 @@ export function joinPlayer(id: string, userName: string, gameId: string): Player
   player.category = CategoryList[Math.floor(Math.random() * CategoryList.length)] as Category;
 
   players.push(player);
-  const game = games.find((game) => gameId === game.gameId);
+  const game = games.find((gameToFind) => gameId === gameToFind.gameId);
   if (game) {
     game.players.push(player);
   }
@@ -105,7 +105,7 @@ export function getAllPlayersInGame(gameId: string): Player[] {
 }
 
 // Player leaves chat
-export function kickPlayerFromGame(id: string) {
+export function kickPlayerFromGame(id: string): Player {
   const index = players.findIndex((player) => player.id === id);
 
   if (index !== -1) {
