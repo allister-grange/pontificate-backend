@@ -7,15 +7,15 @@ export type Player = {
   turnStatus: TurnStatusOptions,
   category: Category,
   game: Game
-}
+};
 
 export type Game = {
   players: Array<Player>,
   gameId: string,
   pointsToWin: number
-}
+};
 
-export type TurnStatusOptions = 'ready'|'active'|'waiting'
+export type TurnStatusOptions = 'ready'|'active'|'waiting';
 
-export type Category = 'person'|'object'|'nature'|'random'|'action'|'world'
-export const CategoryList = ['person','object','nature','random','action','world'];
+export type Category = 'person'|'object'|'nature'|'random'|'action'|'world';
+export const CategoryList = ['person', 'object', 'nature', 'random', 'action', 'world'];
