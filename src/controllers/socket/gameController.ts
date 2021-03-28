@@ -90,7 +90,7 @@ export const newPlayerLobbyEvent = (io: any, socket: any, data: any) => {
   });
 };
 
-export const addPointToPlayer = (io, socket, data) => {
+export const addPointToPlayer = (io, data) => {
   if (!data) {
     return;
   }
@@ -109,7 +109,7 @@ export const addPointToPlayer = (io, socket, data) => {
     console.error(`No games found with gameId ${player.gameId}`);
   }
 
-  const gameOver = points > game.pointsToWin;
+  const gameOver = points >= game.pointsToWin;
 
   if (gameOver) {
     console.log(`Hit the max point limit in game, ending game ${player.gameId}`);
