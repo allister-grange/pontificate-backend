@@ -1,6 +1,7 @@
 import * as SOCKET_MESSAGES from '../../constants/socketMessages';
 import {
   addPointToPlayer,
+  connectPlayer,
   disconnectPlayer,
   doesGameExistEvent,
   doesUserNameExist, getCurrentPlayersInGameEvent, newPlayerLobbyEvent, startNewGameEvent,
@@ -20,6 +21,7 @@ export default (io) => {
     socket.on(SOCKET_MESSAGES.START_NEW_GAME_EVENT, (data) => startNewGameEvent(io, socket, data));
     socket.on(SOCKET_MESSAGES.DOES_USERNAME_EXIST_EVENT, (data) => doesUserNameExist(socket, data));
     socket.on(SOCKET_MESSAGES.DISCONNECT, () => disconnectPlayer(io, socket));
+    socket.on('rejoin-player', (data) => connectPlayer(io, socket, data));
 
     // player events
     socket.on(SOCKET_MESSAGES.PLAYER_READY_EVENT, (data) => playerReadyEvent(io, socket, data));

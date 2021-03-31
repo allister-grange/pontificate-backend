@@ -19,6 +19,15 @@ export function joinPlayer(id: string, userName: string, gameId: string): Player
 
   player.category = CategoryList[Math.floor(Math.random() * CategoryList.length)] as Category;
 
+  // if the player is already in the lobby (caused by refreshing in the lobby), don't
+  // allow them to join
+  const playerAlreadyInGame = players.find(
+    (playerToFind) => player.userName === playerToFind.userName,
+  );
+  if (playerAlreadyInGame) {
+    return playerAlreadyInGame;
+  }
+
   players.push(player);
   const game = games.find((gameToFind) => gameId === gameToFind.gameId);
   if (game) {
@@ -36,21 +45,21 @@ export function createGame(gameId: string, pointsToWin: number) {
   games.push({ players: [], gameId, pointsToWin });
 }
 
-export function getCurrentPlayer(id: string) {
-  return players.find((player) => player.id === id);
+export function getCurrentPlayer(userName: string) {
+  return players.find((player) => player.userName === userName);
 }
 
 export function getPlayerByUserName(userName: string): Player {
   return players.find((player) => player.userName === userName);
 }
 
-export function setPlayerReadyStatus(id: string, isPlayerReady: boolean) {
-  if (!id || isPlayerReady === undefined) {
+export function setPlayerReadyStatus(userName: string, isPlayerReady: boolean) {
+  if (!userName || isPlayerReady === undefined) {
     console.error('ERROR: Incorrect arguments passed to setPlayerReadyStatus');
-    console.error(`ID is ${id}, isPlayerReady is ${isPlayerReady}`);
+    console.error(`userName is ${userName}, isPlayerReady is ${isPlayerReady}`);
     return;
   }
-  const player = getCurrentPlayer(id);
+  const player = getCurrentPlayer(userName);
   if (player) {
     player.isReady = isPlayerReady;
   }

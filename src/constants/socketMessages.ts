@@ -13,3 +13,4 @@ export const GET_CURRENT_PLAYERS_IN_GAME_EVENT = 'getCurrentPlayersInGameEvent';
 export const NEW_PLAYER_LOBBY_EVENT = 'newPlayerLobbyEvent';
 export const GAME_OVER_RES = 'gameOverRes';
 export const DISCONNECT = 'disconnect';
+export const CONNECT = 'connect';

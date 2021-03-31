@@ -50,16 +50,17 @@ export const playerReadyEvent = (io: any, socket: any, data: any) => {
     return;
   }
 
+  const { userName, isPlayerReady } = data.query;
+
   //* get player
-  const player = getCurrentPlayer(socket.id);
-  const { isPlayerReady } = data.query;
+  const player = getCurrentPlayer(userName);
 
   if (!player) {
     console.error(`No player found with socket id of ${socket.id}`);
     return;
   }
 
-  setPlayerReadyStatus(socket.id, isPlayerReady);
+  setPlayerReadyStatus(userName, isPlayerReady);
 
   console.log(`${player.userName} is now set to ready status ${player.isReady} in game ${player.gameId}`);
   const playersInGame = getAllPlayersInGame(player.gameId);

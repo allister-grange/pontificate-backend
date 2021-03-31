@@ -10,16 +10,36 @@ const gameExists = (io: any, gameId: string): boolean => io.sockets.adapter.room
 
 export const disconnectPlayer = (io, socket) => {
   // delete player from users & emit that player has left the game
-  const player = kickPlayerFromGame(socket.id);
+  // TODO only kick a player if the game's status is over
+  // const player = kickPlayerFromGame(socket.id);
 
-  if (player) {
-    console.log(`player ${player.userName} left the game`);
+  // if (player) {
+  //   console.log(`player ${player.userName} left the game`);
 
-    io.to(player.gameId).emit('message', {
-      userId: player.id,
-      userName: player.userName,
-      text: `${player.userName} has left the game`,
-    });
+  //   io.to(player.gameId).emit('message', {
+  //     userId: player.id,
+  //     userName: player.userName,
+  //     text: `${player.userName} has left the game`,
+  //   });
+  // }
+};
+
+export const connectPlayer = (io, socket, data) => {
+  console.log('connect called');
+
+  if (!data) {
+    return;
+  }
+
+  const gameId = data.query.gameId as string;
+  const userName = data.query.userName as string;
+
+  if (gameExists(io, gameId)) {
+    console.log(`called, with ${gameId} : ${userName}`);
+
+    socket.join(gameId);
+    const playersInGame = getAllPlayersInGame(gameId);
+    io.in(gameId).emit(PLAYERS_IN_GAME_RESPONSE, { playersInGame });
   }
 };
 
