@@ -10,7 +10,7 @@ import {
   setPlayerReadyStatus,
   setPlayerTurnStatus,
   setRandomPlayerCategory,
-} from '../../services/mockDBService';
+} from '../../services/GameService';
 import { Player, TurnStatusOptions } from '../../types';
 
 export const createNewLobbyEvent = (socket: any, data: any) => {

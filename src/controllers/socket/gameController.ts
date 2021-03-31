@@ -2,9 +2,9 @@ import {
   DOES_GAME_EXIST_RES, DOES_USERNAME_EXIST_RES, GAME_OVER_RES, PLAYERS_IN_GAME_RESPONSE,
 } from '../../constants/socketMessages';
 import {
-  kickPlayerFromGame, joinPlayer, getPlayerByUserName,
-  getAllPlayersInGame, setPointsOfPlayer, changePlayerTurnStatus, getGame,
-} from '../../services/mockDBService';
+  joinPlayer, getPlayerByUserName, getAllPlayersInGame,
+  setPointsOfPlayer, changePlayerTurnStatus, getGame,
+} from '../../services/GameService';
 
 const gameExists = (io: any, gameId: string): boolean => io.sockets.adapter.rooms.get(gameId);
 
