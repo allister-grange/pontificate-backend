@@ -120,6 +120,8 @@ export function kickPlayerFromGame(id: string): Player {
   if (index !== -1) {
     return players.splice(index, 1)[0];
   }
+
+  return null;
 }
 
 export function changePlayerTurnStatus(player: Player, status: TurnStatusOptions) {
