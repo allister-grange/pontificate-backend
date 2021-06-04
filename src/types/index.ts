@@ -6,7 +6,8 @@ export type Player = {
   points: number,
   turnStatus: TurnStatusOptions,
   category: Category,
-  game: Game
+  game: Game,
+  words: Array<string>
 };
 
 export type Game = {

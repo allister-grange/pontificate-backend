@@ -8,14 +8,17 @@ const games = [] as Game[];
 
 // Join player to chat
 export function joinPlayer(id: string, userName: string, gameId: string): Player {
-  const player = {
+  const player: Player = {
     id,
     userName,
     gameId,
     isReady: false,
     points: 0,
     turnStatus: 'waiting' as TurnStatusOptions,
-  } as Player;
+    words: [],
+    category: undefined,
+    game: undefined
+  } ;
 
   player.category = CategoryList[Math.floor(Math.random() * CategoryList.length)] as Category;
 
@@ -73,6 +76,16 @@ export function setPointsOfPlayer(userName: string, points: number) {
   const player = getPlayerByUserName(userName);
   if (player) {
     player.points = points;
+  }
+}
+
+export function addWordToPlayer(userName: string, word: string) {
+  if (!userName || !word) {
+    console.error('ERROR: Incorrect arguments passed to setPointsOfPlayer');
+  }
+  const player = getPlayerByUserName(userName);
+  if (player) {
+    player.words.push(word);
   }
 }
 

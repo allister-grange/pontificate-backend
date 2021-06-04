@@ -4,6 +4,7 @@ import {
 import {
   joinPlayer, getPlayerByUserName, getAllPlayersInGame,
   setPointsOfPlayer, changePlayerTurnStatus, getGame,
+  addWordToPlayer,
 } from '../../services/GameService';
 
 const gameExists = (io: any, gameId: string): boolean => io.sockets.adapter.rooms.get(gameId);
@@ -116,7 +117,7 @@ export const addPointToPlayer = (io, data) => {
   }
 
   //* get player
-  const { points, userName } = data.query;
+  const { points, userName, word } = data.query;
   const player = getPlayerByUserName(userName);
 
   if (!player) {
@@ -139,12 +140,8 @@ export const addPointToPlayer = (io, data) => {
     return;
   }
 
-  if (!player) {
-    console.error(`No player found with username of ${userName}`);
-    return;
-  }
-
   setPointsOfPlayer(player.userName, points);
+  addWordToPlayer(player.userName, word);
 
   console.log(`${player.userName} now has ${player.points} points in game ${player.gameId}`);
 
