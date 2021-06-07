@@ -1,5 +1,5 @@
 import {
-  Player, TurnStatusOptions, Category, CategoryList, Game,
+  Player, TurnStatusOptions, Category, CategoryList, Game, TURN_LENGTH,
 } from '../types';
 
 // TODO need to replace this with some sort of db
@@ -17,7 +17,8 @@ export function joinPlayer(id: string, userName: string, gameId: string): Player
     turnStatus: 'waiting' as TurnStatusOptions,
     words: [],
     category: undefined,
-    game: undefined
+    game: undefined,
+    timeLeftInTurn: 0,
   } ;
 
   player.category = CategoryList[Math.floor(Math.random() * CategoryList.length)] as Category;
@@ -124,6 +125,23 @@ export function setPlayerTurnStatus(playerUserName: string, turnStatus: TurnStat
 
 export function getAllPlayersInGame(gameId: string): Player[] {
   return players.filter((player) => player.gameId === gameId);
+}
+
+export const setPlayersTimeLeftInTurn = (player: Player) => {
+  const playerInGame = players.find(playerToFind => playerToFind.userName === player.userName);
+  
+  if(playerInGame){
+    playerInGame.timeLeftInTurn = TURN_LENGTH;
+  }
+}
+
+export const takeASecondOffAPlayerTimer = (player: Player) => {
+  
+  const playerInGame = players.find(playerInGame => player.userName === playerInGame.userName);
+
+  if(playerInGame){
+    playerInGame.timeLeftInTurn -= 1;
+  }
 }
 
 // Player leaves chat

@@ -7,7 +7,8 @@ export type Player = {
   turnStatus: TurnStatusOptions,
   category: Category,
   game: Game,
-  words: Array<string>
+  words: Array<string>,
+  timeLeftInTurn: number
 };
 
 export type Game = {
@@ -20,3 +21,5 @@ export type TurnStatusOptions = 'ready'|'active'|'waiting';
 
 export type Category = 'person'|'object'|'nature'|'random'|'action'|'world';
 export const CategoryList = ['person', 'object', 'nature', 'random', 'action', 'world'];
+
+export const TURN_LENGTH = 50;

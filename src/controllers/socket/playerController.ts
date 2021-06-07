@@ -8,8 +8,10 @@ import {
   getCurrentPlayer,
   getPlayerByUserName,
   setPlayerReadyStatus,
+  setPlayersTimeLeftInTurn,
   setPlayerTurnStatus,
   setRandomPlayerCategory,
+  takeASecondOffAPlayerTimer,
 } from '../../services/GameService';
 import { Player, TurnStatusOptions } from '../../types';
 
@@ -86,12 +88,16 @@ export const setPlayerTurnStatusInGame = (io, socket, data) => {
 
   console.log(`Changing ${playerUserNameFromRequest} in game ${gameId} status to ${turnStatus}`);
 
+  // if we're setting up a player to take a turn, we need to start their timer
+  if(turnStatus === "active"){
+    startTimer(player, io);
+  }
+
   setPlayerTurnStatus(playerUserNameFromRequest, turnStatus);
   if (nextPlayerToTakeTurn) {
     setPlayerTurnStatus(nextPlayerToTakeTurn.userName, 'ready');
   }
 
-  // todo print these out and see if they're necessary
   const playersInGamePostChange = getAllPlayersInGame(gameId);
   const playerPostChange = getPlayerByUserName(playerUserNameFromRequest);
 
@@ -106,3 +112,24 @@ export const setPlayerTurnStatusInGame = (io, socket, data) => {
   io.in(gameId).emit(PLAYERS_IN_GAME_RESPONSE, { playersInGame: playersInGamePostChange });
   io.in(gameId).emit(CHANGE_TURN_STATUS_FOR_PLAYER, { player: playerPostChange, turnStatus });
 };
+
+
+const startTimer = (player: Player, io: any) => {
+  console.log(`player ${player.userName}`);
+  setPlayersTimeLeftInTurn(player);
+
+  var intervalId = setInterval(function(){
+    tickTimerForPlayer(player, io, intervalId);
+  }, 1000);
+}
+
+const tickTimerForPlayer = (player: Player, io: any, intervalId: any) => {  
+  takeASecondOffAPlayerTimer(player);
+
+  if(player.timeLeftInTurn === 0){
+    clearInterval(intervalId);
+  }
+
+  const playersInGame = getAllPlayersInGame(player.gameId);
+  io.in(player.gameId).emit(PLAYERS_IN_GAME_RESPONSE, { playersInGame: playersInGame });
+}
