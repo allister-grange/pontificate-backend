@@ -1,5 +1,5 @@
 import {
-  Player, TurnStatusOptions, Category, CategoryList, Game, TURN_LENGTH,
+  Player, TurnStatusOptions, Category, CategoryList, Game,
 } from '../types';
 
 // TODO need to replace this with some sort of db
@@ -18,7 +18,7 @@ export function joinPlayer(id: string, userName: string, gameId: string): Player
     words: [],
     category: undefined,
     game: undefined,
-    timeLeftInTurn: 0,
+    timeLeftInTurn: -1,
   } ;
 
   player.category = CategoryList[Math.floor(Math.random() * CategoryList.length)] as Category;
@@ -127,11 +127,12 @@ export function getAllPlayersInGame(gameId: string): Player[] {
   return players.filter((player) => player.gameId === gameId);
 }
 
-export const setPlayersTimeLeftInTurn = (player: Player) => {
+export const setPlayersTimeLeftInTurn = (player: Player, time: number) => {
   const playerInGame = players.find(playerToFind => playerToFind.userName === player.userName);
   
-  if(playerInGame){
-    playerInGame.timeLeftInTurn = TURN_LENGTH;
+  // if the player is already active, don't start his timer again
+  if(playerInGame && playerInGame.turnStatus != 'active'){
+    playerInGame.timeLeftInTurn = time;
   }
 }
 
@@ -139,7 +140,7 @@ export const takeASecondOffAPlayerTimer = (player: Player) => {
   
   const playerInGame = players.find(playerInGame => player.userName === playerInGame.userName);
 
-  if(playerInGame){
+  if(playerInGame && player.timeLeftInTurn > 0){
     playerInGame.timeLeftInTurn -= 1;
   }
 }

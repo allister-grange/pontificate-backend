@@ -13,7 +13,7 @@ import {
   setRandomPlayerCategory,
   takeASecondOffAPlayerTimer,
 } from '../../services/GameService';
-import { Player, TurnStatusOptions } from '../../types';
+import { Player, TurnStatusOptions, TURN_LENGTH } from '../../types';
 
 export const createNewLobbyEvent = (socket: any, data: any) => {
   if (!data) {
@@ -93,6 +93,10 @@ export const setPlayerTurnStatusInGame = (io, socket, data) => {
     startTimer(player, io);
   }
 
+  if(turnStatus === "waiting"){
+    setPlayersTimeLeftInTurn(player, -1);
+  }
+
   setPlayerTurnStatus(playerUserNameFromRequest, turnStatus);
   if (nextPlayerToTakeTurn) {
     setPlayerTurnStatus(nextPlayerToTakeTurn.userName, 'ready');
@@ -116,7 +120,7 @@ export const setPlayerTurnStatusInGame = (io, socket, data) => {
 
 const startTimer = (player: Player, io: any) => {
   console.log(`player ${player.userName}`);
-  setPlayersTimeLeftInTurn(player);
+  setPlayersTimeLeftInTurn(player, TURN_LENGTH);
 
   var intervalId = setInterval(function(){
     tickTimerForPlayer(player, io, intervalId);
