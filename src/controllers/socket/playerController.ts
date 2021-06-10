@@ -88,7 +88,7 @@ export const setPlayerTurnStatusInGame = (io, socket, data) => {
 
   console.log(`Changing ${playerUserNameFromRequest} in game ${gameId} status to ${turnStatus}`);
 
-  // if we're setting up a player to take a turn, we need to start their timer
+  //* if we're setting up a player to take a turn, we need to start their timer
   if(turnStatus === "active"){
     startTimer(player, io);
   }

@@ -117,7 +117,7 @@ export const addPointToPlayer = (io, data) => {
   }
 
   //* get player
-  const { points, userName, word } = data.query;
+  const { userName, word } = data.query;
   const player = getPlayerByUserName(userName);
 
   if (!player) {
@@ -130,7 +130,7 @@ export const addPointToPlayer = (io, data) => {
     console.error(`No games found with gameId ${player.gameId}`);
   }
 
-  const gameOver = points >= game.pointsToWin;
+  const gameOver = player.points + 1 >= game.pointsToWin;
 
   if (gameOver) {
     console.log(`Hit the max point limit in game, ending game ${player.gameId}`);
@@ -140,7 +140,7 @@ export const addPointToPlayer = (io, data) => {
     return;
   }
 
-  setPointsOfPlayer(player.userName, points);
+  setPointsOfPlayer(player.userName, player.points + 1);
   addWordToPlayer(player.userName, word);
 
   console.log(`${player.userName} now has ${player.points} points in game ${player.gameId}`);
