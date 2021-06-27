@@ -75,10 +75,14 @@ export const doesGameExistEvent = (io, socket, data) => {
 
   const gameId = data.query.gameId as string;
   const gameExistsRes = gameExists(io, gameId);
+  let gameExistsInSocket = false;
+  if(gameExistsRes) {
+    gameExistsInSocket = true;
+  }
 
-  console.log(`Does game exist triggered ${gameId};${gameExistsRes}`);
+  console.log(`Does game exist triggered ${gameId};${gameExistsInSocket}`);
 
-  socket.emit(DOES_GAME_EXIST_RES, { gameExists: gameExistsRes });
+  socket.emit(DOES_GAME_EXIST_RES, { gameExists: gameExistsInSocket });
 };
 
 export const newPlayerLobbyEvent = (io: any, socket: any, data: any) => {
