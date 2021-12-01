@@ -27,7 +27,7 @@ export const createNewLobbyEvent = (socket: any, data: any) => {
   socket.join(gameId);
 };
 
-const findNextPlayerToTakeTurn = (playersInGame: Player[], player: Player): Player => {
+const findNextPlayerToTakeTurn = (playersInGame: Player[], player: Player): Player | undefined => {
   // only need to set a next player to take a turn if the
   // current player is active and changing to 'waiting'
   console.log(`current player is ${player.userName}`);
@@ -44,7 +44,7 @@ const findNextPlayerToTakeTurn = (playersInGame: Player[], player: Player): Play
     return playersInGame[indexOfPlayer + 1];
   }
 
-  return null;
+  return undefined;
 };
 
 export const playerReadyEvent = (io: any, socket: any, data: any) => {
@@ -73,7 +73,7 @@ export const playerReadyEvent = (io: any, socket: any, data: any) => {
   });
 };
 
-export const setPlayerTurnStatusInGame = (io, socket, data) => {
+export const setPlayerTurnStatusInGame = (io: any, socket: any, data: any) => {
   if (!data) {
     return;
   }
@@ -84,17 +84,17 @@ export const setPlayerTurnStatusInGame = (io, socket, data) => {
 
   const playersInGame = getAllPlayersInGame(gameId);
   const player = getPlayerByUserName(playerUserNameFromRequest);
-  const nextPlayerToTakeTurn = findNextPlayerToTakeTurn(playersInGame, player);
+  const nextPlayerToTakeTurn = findNextPlayerToTakeTurn(playersInGame, player!);
 
   console.log(`Changing ${playerUserNameFromRequest} in game ${gameId} status to ${turnStatus}`);
 
   //* if we're setting up a player to take a turn, we need to start their timer
   if(turnStatus === "active"){
-    startTimer(player, io);
+    startTimer(player!, io);
   }
 
   if(turnStatus === "waiting"){
-    setPlayersTimeLeftInTurn(player, -1);
+    setPlayersTimeLeftInTurn(player!, -1);
   }
 
   setPlayerTurnStatus(playerUserNameFromRequest, turnStatus);
@@ -134,6 +134,6 @@ const tickTimerForPlayer = (player: Player, io: any, intervalId: any) => {
     clearInterval(intervalId);
   }
 
-  const playersInGame = getAllPlayersInGame(player.gameId);
+  const playersInGame = getAllPlayersInGame(player.gameId);  
   io.in(player.gameId).emit(PLAYERS_IN_GAME_RESPONSE, { playersInGame: playersInGame });
 }

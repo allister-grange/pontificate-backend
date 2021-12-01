@@ -5,10 +5,11 @@ export type Player = {
   isReady: boolean,
   points: number,
   turnStatus: TurnStatusOptions,
-  category: Category,
-  game: Game,
+  category: Category | undefined,
+  game: Game | undefined,
   words: Array<string>,
-  timeLeftInTurn: number
+  timeLeftInTurn: number,
+  wordsSeenInRound: Array<string>
 };
 
 export type Game = {

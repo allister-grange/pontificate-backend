@@ -1,3 +1,4 @@
+import { Server } from 'socket.io';
 import * as SOCKET_MESSAGES from '../../constants/socketMessages';
 import {
   addPointToPlayer,
@@ -8,7 +9,7 @@ import {
 } from './gameController';
 import { createNewLobbyEvent, playerReadyEvent, setPlayerTurnStatusInGame } from './playerController';
 
-export default (io) => {
+export default (io: Server) => {
   io.on('connection', async (socket) => {
     // game events
     socket.on(SOCKET_MESSAGES.CREATE_NEW_LOBBY_EVENT, (data) => createNewLobbyEvent(socket, data));

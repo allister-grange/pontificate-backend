@@ -1,28 +1,58 @@
-import { socket } from './controllers/socket';
+import { socket } from "./controllers/socket";
+import redis, { createClient } from "redis";
 
-require('dotenv').config();
+require("dotenv").config();
 
-const fs = require('fs');
+const fs = require("fs");
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3005;
 
 let options = {};
 
-if (process.env.ENV === 'prod') {
+if (process.env.ENV === "prod") {
   options = {
-    key: fs.readFileSync('privkey.pem'),
-    cert: fs.readFileSync('cert.pem'),
+    key: fs.readFileSync("privkey.pem"),
+    cert: fs.readFileSync("cert.pem"),
   };
 }
 
-const server = process.env.ENV === 'prod' ? require('https').createServer(options) : require('http').createServer(options);
+// set up redis
+(async () => {
+  const client = createClient();
 
-const io = require('socket.io')(server, {
-  cors: {
-    origin: ['https://pontificate.click', 'https://www.pontificate.click', 'https://www.pontificate.click/', 'https://pontificate.click/', 'http://localhost:3005', 'http://192.168.0.22:3005'],
-    methods: ['GET', 'POST'],
+  client.on("error", (err) => console.log("Redis Client Error", err));
+
+  await client.connect();
+
+  await client.set("key", "value");
+  const value = await client.get("key");
+
+  console.log(value);
+})();
+const server =
+  process.env.ENV === "prod"
+    ? require("https").createServer(options)
+    : require("http").createServer(options);
+
+const io = require("socket.io")(
+  server,
+  {
+    cors: {
+      origin: [
+        "https://pontificate.click",
+        "https://www.pontificate.click",
+        "https://www.pontificate.click/",
+        "https://pontificate.click/",
+        "http://localhost:3000",
+        "http://192.168.0.22:3000",
+      ],
+      methods: ["GET", "POST"],
+    },
   },
-});
+  () => {
+    console.log("should make it?");
+  }
+);
 
 socket(io);
 server.listen(PORT, () => console.log(`Listening on port ${PORT}`));

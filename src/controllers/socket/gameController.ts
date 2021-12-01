@@ -1,3 +1,4 @@
+import { Server } from 'socket.io';
 import {
   DOES_GAME_EXIST_RES, DOES_USERNAME_EXIST_RES, GAME_OVER_RES, PLAYERS_IN_GAME_RESPONSE,
 } from '../../constants/socketMessages';
@@ -9,7 +10,7 @@ import {
 
 const gameExists = (io: any, gameId: string): boolean => io.sockets.adapter.rooms.get(gameId);
 
-export const disconnectPlayer = (io, socket) => {
+export const disconnectPlayer = (io: any, socket: any) => {
   // delete player from users & emit that player has left the game
   // TODO only kick a player if the game's status is over
   // const player = kickPlayerFromGame(socket.id);
@@ -25,7 +26,7 @@ export const disconnectPlayer = (io, socket) => {
   // }
 };
 
-export const connectPlayer = (io, socket, data) => {
+export const connectPlayer = (io: any, socket: any, data: any) => {
   console.log('connect called');
 
   if (!data) {
@@ -44,7 +45,7 @@ export const connectPlayer = (io, socket, data) => {
   }
 };
 
-export const doesUserNameExist = (socket, data) => {
+export const doesUserNameExist = (socket: any, data: any) => {
   if (!data) {
     return;
   }
@@ -68,7 +69,7 @@ export const doesUserNameExist = (socket, data) => {
   socket.emit(DOES_USERNAME_EXIST_RES, { userNameIsFree: userNameIsFreeInGame });
 };
 
-export const doesGameExistEvent = (io, socket, data) => {
+export const doesGameExistEvent = (io: any, socket: any, data: any) => {
   if (!data) {
     return;
   }
@@ -115,7 +116,7 @@ export const newPlayerLobbyEvent = (io: any, socket: any, data: any) => {
   });
 };
 
-export const addPointToPlayer = (io, data) => {
+export const addPointToPlayer = (io: any, data: any) => {
   if (!data) {
     return;
   }
@@ -125,13 +126,15 @@ export const addPointToPlayer = (io, data) => {
   const player = getPlayerByUserName(userName);
 
   if (!player) {
-    console.error(`No player found with userName ${userName}`);
+    console.error(`No player or game found with userName ${userName}`);
+    return;
   }
 
   //* if points are over the game limit then end the game
   const game = getGame(player.gameId);
   if (!game) {
     console.error(`No games found with gameId ${player.gameId}`);
+    return;
   }
 
   const gameOver = player.points + 1 >= game.pointsToWin;
@@ -181,7 +184,7 @@ export const startNewGameEvent = (io: any, socket: any, data: any) => {
   io.in(gameId).emit('gameStartedEvent', { playersInGameAfterChange });
 };
 
-export const getCurrentPlayersInGameEvent = (io, socket, data) => {
+export const getCurrentPlayersInGameEvent = (io: any, socket: any, data: any) => {
   const { gameId } = data.query;
 
   if (!gameExists(io, gameId)) {
