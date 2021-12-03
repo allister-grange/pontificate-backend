@@ -1,5 +1,5 @@
 import { socket } from "./controllers/socket";
-import redis, { createClient } from "redis";
+import RedisClient from "./services/RedisClient";
 
 require("dotenv").config();
 
@@ -18,11 +18,12 @@ if (process.env.ENV === "prod") {
 
 // set up redis
 (async () => {
-  const redis = createClient();
+  // const redis = createClient();
 
-  redis.on("error", (err) => console.log("Redis Client Error", err));
+  // redis.on("error", (err) => console.log("Redis Client Error", err));
 
-  await redis.connect();
+  // await redis.connect();
+  RedisClient.initialiseConnection();
 
   const server =
     process.env.ENV === "prod"
@@ -49,6 +50,6 @@ if (process.env.ENV === "prod") {
     }
   );
 
-  socket(io, redis);
+  socket(io);
   server.listen(PORT, () => console.log(`Listening on port ${PORT}`));
 })();

@@ -18,7 +18,7 @@ import {
 const gameExists = (io: any, gameId: string): boolean =>
   io.sockets.adapter.rooms.get(gameId);
 
-export const disconnectPlayer = (io: any, socket: any, redis: any) => {
+export const disconnectPlayer = (io: any, socket: any) => {
   // delete player from users & emit that player has left the game
   // TODO only kick a player if the game's status is over
   // const player = kickPlayerFromGame(socket.id);
@@ -45,13 +45,13 @@ export const connectPlayer = async (io: any, socket: any, data: any) => {
 
   if (gameExists(io, gameId)) {
     console.log(`called, with ${gameId} : ${userName}`);
-    socket.join(gameId);
-    const playersInGame = getAllPlayersInGame(gameId);
+    await socket.join(gameId);
+    const playersInGame = await getAllPlayersInGame(gameId);
     io.in(gameId).emit(PLAYERS_IN_GAME_RESPONSE, { playersInGame });
   }
 };
 
-export const doesUserNameExist = (socket: any, data: any) => {
+export const doesUserNameExist = async (socket: any, data: any) => {
   if (!data) {
     return;
   }
@@ -61,7 +61,7 @@ export const doesUserNameExist = (socket: any, data: any) => {
 
   console.log(`Does username exist triggered ${gameId};${userName}`);
 
-  const playersInGame = getAllPlayersInGame(gameId);
+  const playersInGame = await getAllPlayersInGame(gameId);
   let userNameIsFreeInGame = true;
 
   playersInGame.forEach((player) => {
@@ -77,7 +77,7 @@ export const doesUserNameExist = (socket: any, data: any) => {
   });
 };
 
-export const doesGameExistEvent = (io: any, socket: any, data: any) => {
+export const doesGameExistEvent = async (io: any, socket: any, data: any) => {
   if (!data) {
     return;
   }
@@ -94,7 +94,7 @@ export const doesGameExistEvent = (io: any, socket: any, data: any) => {
   socket.emit(DOES_GAME_EXIST_RES, { gameExists: gameExistsInSocket });
 };
 
-export const newPlayerLobbyEvent = async (io: any, socket: any, data: any, redis: any) => {
+export const newPlayerLobbyEvent = async (io: any, socket: any, data: any) => {
   if (!data) {
     return;
   }
@@ -112,10 +112,10 @@ export const newPlayerLobbyEvent = async (io: any, socket: any, data: any, redis
   }
 
   //* create player and put into temp storage (object for now, db soon)
-  const player = joinPlayer(socket.id, userName, gameId);
+  const player = await joinPlayer(socket.id, userName, gameId);
 
   socket.join(player.gameId);
-  const playersInGame = getAllPlayersInGame(gameId);
+  const playersInGame = await getAllPlayersInGame(gameId);
   console.log(`Game ${gameId} had player ${userName} join`);
 
   io.in(gameId).emit("newPlayerLobbyEvent", {
@@ -126,14 +126,14 @@ export const newPlayerLobbyEvent = async (io: any, socket: any, data: any, redis
   });
 };
 
-export const addPointToPlayer = (io: any, data: any) => {
+export const addPointToPlayer = async (io: any, data: any) => {
   if (!data) {
     return;
   }
 
   //* get player
   const { userName, word } = data.query;
-  const player = getPlayerByUserName(userName);
+  const player = await getPlayerByUserName(userName);
 
   if (!player) {
     console.error(`No player or game found with userName ${userName}`);
@@ -141,7 +141,7 @@ export const addPointToPlayer = (io: any, data: any) => {
   }
 
   //* if points are over the game limit then end the game
-  const game = getGame(player.gameId);
+  const game = await getGame(player.gameId);
   if (!game) {
     console.error(`No games found with gameId ${player.gameId}`);
     return;
@@ -159,14 +159,14 @@ export const addPointToPlayer = (io: any, data: any) => {
     return;
   }
 
-  setPointsOfPlayer(player.userName, player.points + 1);
-  addWordToPlayer(player.userName, word);
+  await setPointsOfPlayer(player.userName, player.points + 1);
+  await addWordToPlayer(player.userName, word);
 
   console.log(
     `${player.userName} now has ${player.points} points in game ${player.gameId}`
   );
 
-  const playersInGame = getAllPlayersInGame(player.gameId);
+  const playersInGame = await getAllPlayersInGame(player.gameId);
 
   //* emit message to all users that the player is ready
   io.in(player.gameId).emit(PLAYERS_IN_GAME_RESPONSE, {
@@ -174,7 +174,7 @@ export const addPointToPlayer = (io: any, data: any) => {
   });
 };
 
-export const startNewGameEvent = (io: any, socket: any, data: any) => {
+export const startNewGameEvent = async (io: any, socket: any, data: any) => {
   if (!data) {
     return;
   }
@@ -186,20 +186,20 @@ export const startNewGameEvent = (io: any, socket: any, data: any) => {
     return;
   }
 
-  const playersInGame = getAllPlayersInGame(gameId);
+  const playersInGame = await getAllPlayersInGame(gameId);
   // set random player to be ready in the game, they will start first
   const player =
     playersInGame[Math.floor(Math.random() * playersInGame.length)];
-  changePlayerTurnStatus(player, "ready");
+  await changePlayerTurnStatus(player, "ready");
   // todo clean this up, think of a better way, don't need to access twice
-  const playersInGameAfterChange = getAllPlayersInGame(gameId);
+  const playersInGameAfterChange = await getAllPlayersInGame(gameId);
 
   console.log(`Starting game with id of${gameId}`);
 
   io.in(gameId).emit("gameStartedEvent", { playersInGameAfterChange });
 };
 
-export const getCurrentPlayersInGameEvent = (
+export const getCurrentPlayersInGameEvent = async (
   io: any,
   socket: any,
   data: any
@@ -217,7 +217,7 @@ export const getCurrentPlayersInGameEvent = (
   // this is probably inefficient, need to have redux on the front end holding the socketRef in
   // state as opposed to joining them into the room again when the game starts
   socket.join(gameId);
-  const playersInGame = getAllPlayersInGame(gameId);
+  const playersInGame = await getAllPlayersInGame(gameId);
 
   io.in(gameId).emit(PLAYERS_IN_GAME_RESPONSE, { playersInGame });
 };

@@ -5,7 +5,6 @@ import {
 import {
   createGame,
   getAllPlayersInGame,
-  getCurrentPlayer,
   getPlayerByUserName,
   setPlayerReadyStatus,
   setPlayersTimeLeftInTurn,
@@ -15,7 +14,7 @@ import {
 } from '../../services/GameService';
 import { Player, TurnStatusOptions, TURN_LENGTH } from '../../types';
 
-export const createNewLobbyEvent = (socket: any, data: any) => {
+export const createNewLobbyEvent = async (socket: any, data: any) => {
   if (!data) {
     return;
   }
@@ -23,7 +22,7 @@ export const createNewLobbyEvent = (socket: any, data: any) => {
   const { gameId, pointsToWin } = data.query;
 
   console.log(`Creating a new game with id of ${gameId} and points to win of ${pointsToWin}`);
-  createGame(gameId, pointsToWin);
+  await createGame(gameId, pointsToWin);
   socket.join(gameId);
 };
 
@@ -47,7 +46,7 @@ const findNextPlayerToTakeTurn = (playersInGame: Player[], player: Player): Play
   return undefined;
 };
 
-export const playerReadyEvent = (io: any, socket: any, data: any) => {
+export const playerReadyEvent = async (io: any, socket: any, data: any) => {
   if (!data) {
     return;
   }
@@ -55,17 +54,17 @@ export const playerReadyEvent = (io: any, socket: any, data: any) => {
   const { userName, isPlayerReady } = data.query;
 
   //* get player
-  const player = getCurrentPlayer(userName);
+  const player = await getPlayerByUserName(userName);
 
   if (!player) {
     console.error(`No player found with socket id of ${socket.id}`);
     return;
   }
 
-  setPlayerReadyStatus(userName, isPlayerReady);
+  await setPlayerReadyStatus(userName, isPlayerReady);
 
   console.log(`${player.userName} is now set to ready status ${player.isReady} in game ${player.gameId}`);
-  const playersInGame = getAllPlayersInGame(player.gameId);
+  const playersInGame = await getAllPlayersInGame(player.gameId);
 
   //* emit message to all users that the player is ready
   io.in(player.gameId).emit('playerReadyEvent', {
@@ -73,7 +72,7 @@ export const playerReadyEvent = (io: any, socket: any, data: any) => {
   });
 };
 
-export const setPlayerTurnStatusInGame = (io: any, socket: any, data: any) => {
+export const setPlayerTurnStatusInGame = async (io: any, socket: any, data: any) => {
   if (!data) {
     return;
   }
@@ -82,8 +81,8 @@ export const setPlayerTurnStatusInGame = (io: any, socket: any, data: any) => {
   const gameId = data.query.gameId as string;
   const turnStatus = data.query.turnStatus as TurnStatusOptions;
 
-  const playersInGame = getAllPlayersInGame(gameId);
-  const player = getPlayerByUserName(playerUserNameFromRequest);
+  const playersInGame = await getAllPlayersInGame(gameId);
+  const player = await getPlayerByUserName(playerUserNameFromRequest);
   const nextPlayerToTakeTurn = findNextPlayerToTakeTurn(playersInGame, player!);
 
   console.log(`Changing ${playerUserNameFromRequest} in game ${gameId} status to ${turnStatus}`);
@@ -97,18 +96,18 @@ export const setPlayerTurnStatusInGame = (io: any, socket: any, data: any) => {
     setPlayersTimeLeftInTurn(player!, -1);
   }
 
-  setPlayerTurnStatus(playerUserNameFromRequest, turnStatus);
+  await setPlayerTurnStatus(playerUserNameFromRequest, turnStatus);
   if (nextPlayerToTakeTurn) {
-    setPlayerTurnStatus(nextPlayerToTakeTurn.userName, 'ready');
+    await setPlayerTurnStatus(nextPlayerToTakeTurn.userName, 'ready');
   }
 
-  const playersInGamePostChange = getAllPlayersInGame(gameId);
-  const playerPostChange = getPlayerByUserName(playerUserNameFromRequest);
+  const playersInGamePostChange = await getAllPlayersInGame(gameId);
+  const playerPostChange = await getPlayerByUserName(playerUserNameFromRequest);
 
   //* if someone's status changed from 'active' to 'waiting', set up the next person to play
   if (nextPlayerToTakeTurn) {
     console.log(`next player to take a turn is ${nextPlayerToTakeTurn.userName}`);
-    setRandomPlayerCategory(playerUserNameFromRequest);
+    await setRandomPlayerCategory(playerUserNameFromRequest);
     io.in(gameId).emit(CHANGE_TURN_STATUS_FOR_PLAYER, { player: nextPlayerToTakeTurn, turnStatus: 'ready' });
   }
 
@@ -118,22 +117,22 @@ export const setPlayerTurnStatusInGame = (io: any, socket: any, data: any) => {
 };
 
 
-const startTimer = (player: Player, io: any) => {
+const startTimer = async (player: Player, io: any) => {
   console.log(`player ${player.userName}`);
-  setPlayersTimeLeftInTurn(player, TURN_LENGTH);
+  await setPlayersTimeLeftInTurn(player, TURN_LENGTH);
 
   var intervalId = setInterval(function(){
     tickTimerForPlayer(player, io, intervalId);
   }, 1000);
 }
 
-const tickTimerForPlayer = (player: Player, io: any, intervalId: any) => {  
-  takeASecondOffAPlayerTimer(player);
+const tickTimerForPlayer = async (player: Player, io: any, intervalId: any) => {  
+  await takeASecondOffAPlayerTimer(player);
 
   if(player.timeLeftInTurn === 0){
     clearInterval(intervalId);
   }
 
-  const playersInGame = getAllPlayersInGame(player.gameId);  
+  const playersInGame = await getAllPlayersInGame(player.gameId);  
   io.in(player.gameId).emit(PLAYERS_IN_GAME_RESPONSE, { playersInGame: playersInGame });
 }
