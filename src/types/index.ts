@@ -2,7 +2,6 @@ export type Player = {
   id: string,
   gameId: string,
   userName: string,
-  isReady: boolean,
   points: number,
   turnStatus: TurnStatusOptions,
   category: Category | undefined,

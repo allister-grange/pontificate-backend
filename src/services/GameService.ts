@@ -21,7 +21,6 @@ export async function joinPlayer(
     id,
     userName,
     gameId,
-    isReady: false,
     points: 0,
     turnStatus: "waiting" as TurnStatusOptions,
     words: [],
@@ -78,22 +77,6 @@ export async function getPlayerByUserName(
 ): Promise<Player | undefined> {
   const players = await RedisClient.get("players");
   return players.find((player: Player) => player.userName === userName);
-  // return players.find((player) => player.userName === userName);
-}
-
-export async function setPlayerReadyStatus(
-  userName: string,
-  isPlayerReady: boolean
-) {
-  if (!userName || isPlayerReady === undefined) {
-    console.error("ERROR: Incorrect arguments passed to setPlayerReadyStatus");
-    console.error(`userName is ${userName}, isPlayerReady is ${isPlayerReady}`);
-    return;
-  }
-  const player = await getPlayerByUserName(userName);
-  if (player) {
-    player.isReady = isPlayerReady;
-  }
 }
 
 export async function setPointsOfPlayer(userName: string, points: number) {
@@ -148,8 +131,10 @@ export async function setPlayerTurnStatus(
     return;
   }
 
-  const playerInGame = await getPlayerByUserName(playerUserName);
-
+  const players = await RedisClient.get("players");
+  const playerInGame = players.find(
+    (player: Player) => player.userName === playerUserName
+  );
   if (playerInGame) {
     playerInGame.turnStatus = turnStatus;
   } else {
@@ -159,12 +144,13 @@ export async function setPlayerTurnStatus(
       }`
     );
   }
+
+  await RedisClient.set("players", players);
 }
 
 export async function getAllPlayersInGame(gameId: string): Promise<Player[]> {
   const players = await RedisClient.get("players");
   return players.filter((player: Player) => player.gameId === gameId);
-  // return players.filter((player) => player.gameId === gameId);
 }
 
 export const setPlayersTimeLeftInTurn = async (
