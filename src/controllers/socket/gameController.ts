@@ -12,7 +12,7 @@ import {
   setPointsOfPlayer,
   changePlayerTurnStatus,
   getGame,
-  addWordToPlayer,
+  addSeenWordToGame
 } from "../../services/GameService";
 
 const gameExists = (io: any, gameId: string): boolean =>
@@ -160,7 +160,7 @@ export const addPointToPlayer = async (io: any, data: any) => {
   }
 
   await setPointsOfPlayer(player.userName, player.points + 1);
-  await addWordToPlayer(player.userName, word);
+  await addSeenWordToGame(player.userName, word);
 
   console.log(
     `${player.userName} now has ${player.points} points in game ${player.gameId}`

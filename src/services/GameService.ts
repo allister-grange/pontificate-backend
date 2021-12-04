@@ -7,10 +7,6 @@ import {
 } from "../types";
 import RedisClient from "../services/RedisClient";
 
-// TODO need to replace this with some sort of db
-// const players = [] as Player[];
-// const games = [] as Game[];
-
 // Join player to chat
 export async function joinPlayer(
   id: string,
@@ -23,11 +19,10 @@ export async function joinPlayer(
     gameId,
     points: 0,
     turnStatus: "waiting" as TurnStatusOptions,
-    words: [],
     category: undefined,
     game: undefined,
     timeLeftInTurn: -1,
-    wordsSeenInRound: [],
+    currentWord: undefined
   };
 
   player.category = CategoryList[
@@ -62,14 +57,12 @@ export async function joinPlayer(
 export async function getGame(gameId: string): Promise<Game | undefined> {
   const games = await RedisClient.get("games");
   return games.find((game: Game) => game.gameId === gameId);
-  // return games.find((game) => game.gameId === gameId);
 }
 
 export async function createGame(gameId: string, pointsToWin: number) {
   const currentGames = await RedisClient.get("games");
-  currentGames.push({ players: [], gameId, pointsToWin });
+  currentGames.push({ players: [], gameId, pointsToWin, wordsSeenInGame: [] });
   await RedisClient.set("games", currentGames);
-  // games.push({ players: [], gameId, pointsToWin });
 }
 
 export async function getPlayerByUserName(
@@ -93,16 +86,18 @@ export async function setPointsOfPlayer(userName: string, points: number) {
   await RedisClient.set("players", players)
 }
 
-export async function addWordToPlayer(userName: string, word: string) {
+export async function addSeenWordToGame(userName: string, word: string) {
   if (!userName || !word) {
     console.error("ERROR: Incorrect arguments passed to setPointsOfPlayer");
   }
   const players = await RedisClient.get("players");
   const player = players.find((player: Player) => player.userName === userName);
-  if (player) {
-    player.words.push(word);
+  const games = await RedisClient.get("games");
+  const game: Game = games.find((game: Game) => game.gameId === player.gameId)
+  if (game) {
+    game.wordsSeenInGame.push(word);
   }
-  await RedisClient.set("players", players)
+  await RedisClient.set("games", games)
 }
 
 export async function setRandomPlayerCategory(userName: string) {
@@ -185,7 +180,8 @@ export const takeASecondOffAPlayerTimer = async (player: Player) => {
   if (playerInGame && playerInGame.timeLeftInTurn > 0) {
     playerInGame.timeLeftInTurn -= 1;
   }
-
+  console.log(await RedisClient.get("games"));
+  
   await RedisClient.set("players", players);
 };
 

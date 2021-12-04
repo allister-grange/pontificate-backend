@@ -6,15 +6,15 @@ export type Player = {
   turnStatus: TurnStatusOptions,
   category: Category | undefined,
   game: Game | undefined,
-  words: Array<string>,
   timeLeftInTurn: number,
-  wordsSeenInRound: Array<string>
+  currentWord: string | undefined
 };
 
 export type Game = {
   players: Array<Player>,
   gameId: string,
-  pointsToWin: number
+  pointsToWin: number,
+  wordsSeenInGame: Array<string>
 };
 
 export type TurnStatusOptions = 'ready'|'active'|'waiting';
