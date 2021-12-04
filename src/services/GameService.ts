@@ -46,7 +46,7 @@ export async function joinPlayer(
 
   currentPlayers.push(player);
   await RedisClient.set("players", currentPlayers);
-  const currentGames = [...(await RedisClient.get("games"))];
+  const currentGames = await RedisClient.get("games");
   const game = currentGames.find(
     (gameToFind: Game) => gameId === gameToFind.gameId
   );
@@ -84,20 +84,25 @@ export async function setPointsOfPlayer(userName: string, points: number) {
     console.error("ERROR: Incorrect arguments passed to setPointsOfPlayer");
     return;
   }
-  const player = await getPlayerByUserName(userName);
+
+  const players = await RedisClient.get("players");
+  const player = players.find((player: Player) => player.userName === userName);
   if (player) {
     player.points = points;
   }
+  await RedisClient.set("players", players)
 }
 
 export async function addWordToPlayer(userName: string, word: string) {
   if (!userName || !word) {
     console.error("ERROR: Incorrect arguments passed to setPointsOfPlayer");
   }
-  const player = await getPlayerByUserName(userName);
+  const players = await RedisClient.get("players");
+  const player = players.find((player: Player) => player.userName === userName);
   if (player) {
     player.words.push(word);
   }
+  await RedisClient.set("players", players)
 }
 
 export async function setRandomPlayerCategory(userName: string) {
@@ -105,7 +110,8 @@ export async function setRandomPlayerCategory(userName: string) {
     console.error("ERROR: Incorrect arguments passed to setPlayerCategory");
     return;
   }
-  const player = await getPlayerByUserName(userName);
+  const players = await RedisClient.get("players");
+  const player = players.find((player: Player) => player.userName === userName);
 
   // make sure the player can't have the same category twice in a row
   let category = CategoryList[
@@ -120,6 +126,7 @@ export async function setRandomPlayerCategory(userName: string) {
   if (player) {
     player.category = category;
   }
+  await RedisClient.set("players", players)
 }
 
 export async function setPlayerTurnStatus(
@@ -157,9 +164,9 @@ export const setPlayersTimeLeftInTurn = async (
   player: Player,
   time: number
 ) => {
-  const players = [...(await RedisClient.get("players"))];
+  const players = await RedisClient.get("players");
   const playerInGame = players.find(
-    (playerToFind) => playerToFind.userName === player.userName
+    (playerToFind: Player) => playerToFind.userName === player.userName
   );
 
   // if the player is already active, don't start his timer again
@@ -170,12 +177,12 @@ export const setPlayersTimeLeftInTurn = async (
 };
 
 export const takeASecondOffAPlayerTimer = async (player: Player) => {
-  const players = [...(await RedisClient.get("players"))];
+  const players = await RedisClient.get("players");
   const playerInGame = players.find(
-    (playerInGame) => player.userName === playerInGame.userName
+    (playerInGame: Player) => player.userName === playerInGame.userName
   );
 
-  if (playerInGame && player.timeLeftInTurn > 0) {
+  if (playerInGame && playerInGame.timeLeftInTurn > 0) {
     playerInGame.timeLeftInTurn -= 1;
   }
 
@@ -203,11 +210,10 @@ export async function changePlayerTurnStatus(
   player: Player,
   status: TurnStatusOptions
 ) {
-  const players = [...(await RedisClient.get("players"))];
+  const players = await RedisClient.get("players");
   const playerToChange = players.find(
     (toFind: Player) => toFind.id === player.id
   );
   playerToChange.turnStatus = status;
   await RedisClient.set("players", players);
-  // players.find((toFind) => toFind.id === player.id)!.turnStatus = status;
 }

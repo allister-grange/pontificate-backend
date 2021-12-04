@@ -187,15 +187,18 @@ export const startNewGameEvent = async (io: any, socket: any, data: any) => {
   }
 
   const playersInGame = await getAllPlayersInGame(gameId);
+  for (const player of playersInGame) {
+    await changePlayerTurnStatus(player, "waiting");
+  }
+
   // set random player to be ready in the game, they will start first
   const player =
     playersInGame[Math.floor(Math.random() * playersInGame.length)];
   await changePlayerTurnStatus(player, "ready");
-  // todo clean this up, think of a better way, don't need to access twice
+
   const playersInGameAfterChange = await getAllPlayersInGame(gameId);
-
-  console.log(`Starting game with id of${gameId}`);
-
+  
+  console.log(`Starting game with id of ${gameId}`);
   io.in(gameId).emit("gameStartedEvent", { playersInGameAfterChange });
 };
 
