@@ -16,13 +16,8 @@ if (process.env.ENV === "prod") {
   };
 }
 
-// set up redis
 (async () => {
-  // const redis = createClient();
-
-  // redis.on("error", (err) => console.log("Redis Client Error", err));
-
-  // await redis.connect();
+  // set up redis
   RedisClient.initialiseConnection();
 
   const server =
