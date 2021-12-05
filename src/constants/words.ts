@@ -280,7 +280,7 @@ export const worldWords = [
   "Oman",
   "Manahattan",
   "Glasgow",
-  "Auckaland",
+  "Auckland",
   "Whakarewarewa",
   "Czechoslovakia",
   "Noumea",

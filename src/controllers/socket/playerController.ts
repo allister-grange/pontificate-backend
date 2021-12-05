@@ -144,7 +144,6 @@ export const setPlayerTurnStatusInGame = async (
 };
 
 const startTimer = async (player: Player, io: any) => {
-  console.log(`player ${player.userName}`);
   await setPlayersTimeLeftInTurn(player, TURN_LENGTH);
 
   var intervalId = setInterval(function () {

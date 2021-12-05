@@ -12,7 +12,8 @@ import {
   setPointsOfPlayer,
   changePlayerTurnStatus,
   getGame,
-  addSeenWordToGame
+  addSeenWordToGame,
+  chooseNextWordForPlayer,
 } from "../../services/GameService";
 
 const gameExists = (io: any, gameId: string): boolean =>
@@ -161,6 +162,7 @@ export const addPointToPlayer = async (io: any, data: any) => {
 
   await setPointsOfPlayer(player.userName, player.points + 1);
   await addSeenWordToGame(player.userName, word);
+  await chooseNextWordForPlayer(player.userName, game.wordsSeenInGame, word);
 
   console.log(
     `${player.userName} now has ${player.points} points in game ${player.gameId}`
@@ -168,7 +170,7 @@ export const addPointToPlayer = async (io: any, data: any) => {
 
   const playersInGame = await getAllPlayersInGame(player.gameId);
 
-  //* emit message to all users that the player is ready
+  // pass out the new points + next word to the game
   io.in(player.gameId).emit(PLAYERS_IN_GAME_RESPONSE, {
     playersInGame,
   });
@@ -189,6 +191,7 @@ export const startNewGameEvent = async (io: any, socket: any, data: any) => {
   const playersInGame = await getAllPlayersInGame(gameId);
   for (const player of playersInGame) {
     await changePlayerTurnStatus(player, "waiting");
+    await chooseNextWordForPlayer(player.userName, [], undefined);
   }
 
   // set random player to be ready in the game, they will start first
@@ -197,7 +200,7 @@ export const startNewGameEvent = async (io: any, socket: any, data: any) => {
   await changePlayerTurnStatus(player, "ready");
 
   const playersInGameAfterChange = await getAllPlayersInGame(gameId);
-  
+
   console.log(`Starting game with id of ${gameId}`);
   io.in(gameId).emit("gameStartedEvent", { playersInGameAfterChange });
 };

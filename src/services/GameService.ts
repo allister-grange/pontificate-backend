@@ -5,6 +5,7 @@ import {
   CategoryList,
   Game,
 } from "../types";
+import * as WORDS from "../constants/words";
 import RedisClient from "../services/RedisClient";
 
 // Join player to chat
@@ -22,7 +23,9 @@ export async function joinPlayer(
     category: undefined,
     game: undefined,
     timeLeftInTurn: -1,
-    currentWord: undefined
+    currentWord: undefined,
+    nextWord: undefined,
+    skippedWord: undefined,
   };
 
   player.category = CategoryList[
@@ -72,6 +75,70 @@ export async function getPlayerByUserName(
   return players.find((player: Player) => player.userName === userName);
 }
 
+export async function chooseNextWordForPlayer(
+  userName: string,
+  wordsSeenInGame: Array<string>,
+  correctGuessedWord: string | undefined
+) {
+  const players = await RedisClient.get("players");
+  const player: Player = players.find(
+    (player: Player) => player.userName === userName
+  );
+  let words: string[] = [];
+
+  switch (player.category) {
+    case "action":
+      words = WORDS.actionWords;
+      break;
+    case "nature":
+      words = WORDS.natureWords;
+      break;
+    case "object":
+      words = WORDS.objectsWords;
+      break;
+    case "random":
+      words = WORDS.randomWords;
+      break;
+    case "person":
+      words = WORDS.personWords;
+      break;
+    case "world":
+      words = WORDS.worldWords;
+      break;
+    default:
+      words = [];
+  }
+
+  const lengthOfWordArray = WORDS.personWords.length;
+  let randomNum = Math.floor(Math.random() * lengthOfWordArray);
+  // will screw up the session if you run out of words (impossible with the score limit)
+  while (wordsSeenInGame.includes(words[randomNum])) {
+    randomNum = Math.floor(Math.random() * lengthOfWordArray);
+  }
+
+  const nextWord = words[randomNum];
+  // if they guessed the 'skipped' word, then progress the last world
+  if (!correctGuessedWord) {
+    player.currentWord = nextWord;
+    while (wordsSeenInGame.includes(words[randomNum])) {
+      randomNum = Math.floor(Math.random() * lengthOfWordArray);
+    }  
+    player.nextWord = words[randomNum];
+  } else if (correctGuessedWord === player.currentWord) {
+    player.currentWord = player.nextWord;
+    player.nextWord = nextWord;
+  } else {
+    // guessed the previously skipped word
+    player.currentWord = player.nextWord;
+    player.nextWord = nextWord;
+    player.skippedWord = undefined;
+  }
+
+  console.log("player", player);
+  
+  await RedisClient.set("players", players);
+}
+
 export async function setPointsOfPlayer(userName: string, points: number) {
   if (!userName || !points) {
     console.error("ERROR: Incorrect arguments passed to setPointsOfPlayer");
@@ -83,7 +150,7 @@ export async function setPointsOfPlayer(userName: string, points: number) {
   if (player) {
     player.points = points;
   }
-  await RedisClient.set("players", players)
+  await RedisClient.set("players", players);
 }
 
 export async function addSeenWordToGame(userName: string, word: string) {
@@ -93,11 +160,11 @@ export async function addSeenWordToGame(userName: string, word: string) {
   const players = await RedisClient.get("players");
   const player = players.find((player: Player) => player.userName === userName);
   const games = await RedisClient.get("games");
-  const game: Game = games.find((game: Game) => game.gameId === player.gameId)
+  const game: Game = games.find((game: Game) => game.gameId === player.gameId);
   if (game) {
     game.wordsSeenInGame.push(word);
   }
-  await RedisClient.set("games", games)
+  await RedisClient.set("games", games);
 }
 
 export async function setRandomPlayerCategory(userName: string) {
@@ -121,7 +188,7 @@ export async function setRandomPlayerCategory(userName: string) {
   if (player) {
     player.category = category;
   }
-  await RedisClient.set("players", players)
+  await RedisClient.set("players", players);
 }
 
 export async function setPlayerTurnStatus(
@@ -180,8 +247,7 @@ export const takeASecondOffAPlayerTimer = async (player: Player) => {
   if (playerInGame && playerInGame.timeLeftInTurn > 0) {
     playerInGame.timeLeftInTurn -= 1;
   }
-  console.log(await RedisClient.get("games"));
-  
+
   await RedisClient.set("players", players);
 };
 

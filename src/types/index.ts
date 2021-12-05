@@ -7,7 +7,9 @@ export type Player = {
   category: Category | undefined,
   game: Game | undefined,
   timeLeftInTurn: number,
-  currentWord: string | undefined
+  currentWord: string | undefined,
+  skippedWord: string | undefined,
+  nextWord: string | undefined,
 };
 
 export type Game = {
