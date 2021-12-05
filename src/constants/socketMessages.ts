@@ -9,6 +9,7 @@ export const DOES_GAME_EXIST_RES = 'doesGameExistRes';
 export const DOES_USERNAME_EXIST_EVENT = 'doesUserNameExistEvent';
 export const DOES_USERNAME_EXIST_RES = 'doesUserNameExistRes';
 export const START_NEW_GAME_EVENT = 'startNewGameEvent';
+export const SKIP_WORD_EVENT = 'skipWordEvent';
 export const REJOIN_PLAYER = 'rejoinPlayer';
 export const GET_CURRENT_PLAYERS_IN_GAME_EVENT = 'getCurrentPlayersInGameEvent';
 export const NEW_PLAYER_LOBBY_EVENT = 'newPlayerLobbyEvent';

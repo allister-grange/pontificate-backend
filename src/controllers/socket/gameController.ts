@@ -1,4 +1,5 @@
 import { Server } from "socket.io";
+import { Player } from "src/types";
 import {
   DOES_GAME_EXIST_RES,
   DOES_USERNAME_EXIST_RES,
@@ -14,6 +15,7 @@ import {
   getGame,
   addSeenWordToGame,
   chooseNextWordForPlayer,
+  skipWordForPlayer,
 } from "../../services/GameService";
 
 const gameExists = (io: any, gameId: string): boolean =>
@@ -203,6 +205,21 @@ export const startNewGameEvent = async (io: any, socket: any, data: any) => {
 
   console.log(`Starting game with id of ${gameId}`);
   io.in(gameId).emit("gameStartedEvent", { playersInGameAfterChange });
+};
+
+export const skipWordEvent = async (io: any, socket: any, data: any) => {
+  const { gameId, userName } = data.query;
+  const game = await getGame(gameId);
+
+  if(!game){
+    console.log(`game ${gameId} doesn't exist yet, what are you up to?`);
+    return;
+  }
+
+  await skipWordForPlayer(userName, game);
+  const playersInGame = await getAllPlayersInGame(gameId);
+
+  io.in(gameId).emit(PLAYERS_IN_GAME_RESPONSE, { playersInGame });
 };
 
 export const getCurrentPlayersInGameEvent = async (

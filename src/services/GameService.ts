@@ -84,46 +84,21 @@ export async function chooseNextWordForPlayer(
   const player: Player = players.find(
     (player: Player) => player.userName === userName
   );
-  let words: string[] = [];
 
-  switch (player.category) {
-    case "action":
-      words = WORDS.actionWords;
-      break;
-    case "nature":
-      words = WORDS.natureWords;
-      break;
-    case "object":
-      words = WORDS.objectsWords;
-      break;
-    case "random":
-      words = WORDS.randomWords;
-      break;
-    case "person":
-      words = WORDS.personWords;
-      break;
-    case "world":
-      words = WORDS.worldWords;
-      break;
-    default:
-      words = [];
-  }
-
-  const lengthOfWordArray = WORDS.personWords.length;
-  let randomNum = Math.floor(Math.random() * lengthOfWordArray);
-  // will screw up the session if you run out of words (impossible with the score limit)
-  while (wordsSeenInGame.includes(words[randomNum])) {
-    randomNum = Math.floor(Math.random() * lengthOfWordArray);
-  }
-
-  const nextWord = words[randomNum];
   // if they guessed the 'skipped' word, then progress the last world
+  const nextWord = getNextWord(
+    wordsSeenInGame,
+    correctGuessedWord,
+    player.category!
+  );
+
   if (!correctGuessedWord) {
     player.currentWord = nextWord;
-    while (wordsSeenInGame.includes(words[randomNum])) {
-      randomNum = Math.floor(Math.random() * lengthOfWordArray);
-    }  
-    player.nextWord = words[randomNum];
+    player.nextWord = getNextWord(
+      [...wordsSeenInGame, correctGuessedWord!],
+      correctGuessedWord,
+      player.category!
+    );
   } else if (correctGuessedWord === player.currentWord) {
     player.currentWord = player.nextWord;
     player.nextWord = nextWord;
@@ -134,8 +109,6 @@ export async function chooseNextWordForPlayer(
     player.skippedWord = undefined;
   }
 
-  console.log("player", player);
-  
   await RedisClient.set("players", players);
 }
 
@@ -165,6 +138,23 @@ export async function addSeenWordToGame(userName: string, word: string) {
     game.wordsSeenInGame.push(word);
   }
   await RedisClient.set("games", games);
+}
+
+export async function skipWordForPlayer(userName: string, game: Game) {
+  const players = await RedisClient.get("players");
+  const player: Player = players.find(
+    (player: Player) => player.userName === userName
+  );
+
+  player.skippedWord = player.currentWord;
+  player.currentWord = player.nextWord;
+  player.nextWord = getNextWord(
+    game.wordsSeenInGame,
+    undefined,
+    player.category!
+  );
+
+  await RedisClient.set("players", players);
 }
 
 export async function setRandomPlayerCategory(userName: string) {
@@ -278,4 +268,44 @@ export async function changePlayerTurnStatus(
   );
   playerToChange.turnStatus = status;
   await RedisClient.set("players", players);
+}
+
+function getNextWord(
+  wordsSeenInGame: Array<string>,
+  correctGuessedWord: string | undefined,
+  category: Category
+): string | undefined {
+  let words: string[] = [];
+
+  switch (category) {
+    case "action":
+      words = WORDS.actionWords;
+      break;
+    case "nature":
+      words = WORDS.natureWords;
+      break;
+    case "object":
+      words = WORDS.objectsWords;
+      break;
+    case "random":
+      words = WORDS.randomWords;
+      break;
+    case "person":
+      words = WORDS.personWords;
+      break;
+    case "world":
+      words = WORDS.worldWords;
+      break;
+    default:
+      words = [];
+  }
+
+  const lengthOfWordArray = WORDS.personWords.length;
+  let randomNum = Math.floor(Math.random() * lengthOfWordArray);
+  // will screw up the session if you run out of words (impossible with the score limit)
+  while (wordsSeenInGame.includes(words[randomNum])) {
+    randomNum = Math.floor(Math.random() * lengthOfWordArray);
+  }
+
+  return words[randomNum];
 }
