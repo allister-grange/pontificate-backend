@@ -8,7 +8,7 @@ export type Player = {
   game: Game | undefined,
   timeLeftInTurn: number,
   currentWord: string | undefined,
-  skippedWord: string | undefined,
+  skippedWords: string[],
   nextWord: string | undefined,
 };
 

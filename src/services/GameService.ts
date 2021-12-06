@@ -25,7 +25,7 @@ export async function joinPlayer(
     timeLeftInTurn: -1,
     currentWord: undefined,
     nextWord: undefined,
-    skippedWord: undefined,
+    skippedWords: [],
   };
 
   player.category = CategoryList[
@@ -106,7 +106,7 @@ export async function chooseNextWordForPlayer(
     // guessed the previously skipped word
     player.currentWord = player.nextWord;
     player.nextWord = nextWord;
-    player.skippedWord = undefined;
+    player.skippedWords = [...player.skippedWords];
   }
 
   await RedisClient.set("players", players);
@@ -146,7 +146,14 @@ export async function skipWordForPlayer(userName: string, game: Game) {
     (player: Player) => player.userName === userName
   );
 
-  player.skippedWord = player.currentWord;
+  console.log("yo", player.skippedWords);
+  
+  if(player.skippedWords.length >= 2) {
+    console.log("You can't skip more than 2 words");
+    return;
+  }
+
+  player.skippedWords = [...player.skippedWords, player.currentWord!];
   player.currentWord = player.nextWord;
   player.nextWord = getNextWord(
     game.wordsSeenInGame,
