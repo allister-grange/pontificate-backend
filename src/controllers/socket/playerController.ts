@@ -3,6 +3,8 @@ import {
   PLAYERS_IN_GAME_RESPONSE,
 } from "../../constants/socketMessages";
 import {
+  changePlayerTurnStatus,
+  clearPlayersSkippedWords,
   createGame,
   getAllPlayersInGame,
   getPlayerByUserName,
@@ -109,14 +111,7 @@ export const setPlayerTurnStatusInGame = async (
     await startTimer(player!, io);
   }
 
-  if (turnStatus === "waiting") {
-    await setPlayersTimeLeftInTurn(player!, -1);
-  }
-
   await setPlayerTurnStatus(playerUserNameFromRequest, turnStatus);
-  if (nextPlayerToTakeTurn) {
-    await setPlayerTurnStatus(nextPlayerToTakeTurn.userName, "ready");
-  }
 
   const playersInGamePostChange = await getAllPlayersInGame(gameId);
   const playerPostChange = await getPlayerByUserName(playerUserNameFromRequest);
@@ -142,6 +137,36 @@ export const setPlayerTurnStatusInGame = async (
     turnStatus,
   });
 };
+
+
+export const endPlayersTurn = async (
+  io: any,
+  socket: any,
+  data: any
+) => {
+  const { userName } = data.query;
+  const player = await getPlayerByUserName(userName);
+
+  if(!player) {
+    console.error("No player found with username ", userName);
+    return;
+  }
+
+  let playersInGame = await getAllPlayersInGame(player.gameId);
+  await changePlayerTurnStatus(player, "waiting");
+  await clearPlayersSkippedWords(player);
+  await setPlayersTimeLeftInTurn(player, -1);
+  const nextPlayerToTakeTurn = findNextPlayerToTakeTurn(playersInGame, player!);
+
+  if(nextPlayerToTakeTurn) {
+    await setPlayerTurnStatus(nextPlayerToTakeTurn.userName, "ready");
+  }
+
+  playersInGame = await getAllPlayersInGame(player.gameId);
+
+  io.in(player.gameId).emit(PLAYERS_IN_GAME_RESPONSE, { playersInGame });
+};
+
 
 const startTimer = async (player: Player, io: any) => {
   await setPlayersTimeLeftInTurn(player, TURN_LENGTH);

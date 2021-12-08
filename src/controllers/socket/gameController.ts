@@ -16,6 +16,8 @@ import {
   addSeenWordToGame,
   chooseNextWordForPlayer,
   skipWordForPlayer,
+  clearPlayersSkippedWords,
+  setPlayersTimeLeftInTurn,
 } from "../../services/GameService";
 
 const gameExists = (io: any, gameId: string): boolean =>

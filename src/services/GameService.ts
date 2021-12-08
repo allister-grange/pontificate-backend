@@ -277,6 +277,17 @@ export async function changePlayerTurnStatus(
   await RedisClient.set("players", players);
 }
 
+export async function clearPlayersSkippedWords(
+  player: Player
+) {
+  const players = await RedisClient.get("players");
+  const playerToChange = players.find(
+    (toFind: Player) => toFind.id === player.id
+  );
+  playerToChange.skippedWords = [];
+  await RedisClient.set("players", players);
+}
+
 function getNextWord(
   wordsSeenInGame: Array<string>,
   correctGuessedWord: string | undefined,

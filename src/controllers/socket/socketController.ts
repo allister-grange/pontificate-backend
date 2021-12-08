@@ -7,7 +7,7 @@ import {
   doesGameExistEvent,
   doesUserNameExist, getCurrentPlayersInGameEvent, newPlayerLobbyEvent, skipWordEvent, startNewGameEvent,
 } from './gameController';
-import { createNewLobbyEvent, playerReadyEvent, setPlayerTurnStatusInGame } from './playerController';
+import { createNewLobbyEvent, playerReadyEvent, setPlayerTurnStatusInGame, endPlayersTurn } from './playerController';
 
 export default (io: Server) => {
   io.on('connection', async (socket) => {
@@ -24,6 +24,7 @@ export default (io: Server) => {
     socket.on(SOCKET_MESSAGES.DISCONNECT, () => disconnectPlayer(io, socket));
     socket.on(SOCKET_MESSAGES.REJOIN_PLAYER, (data) => connectPlayer(io, socket, data));
     socket.on(SOCKET_MESSAGES.SKIP_WORD_EVENT, (data) => skipWordEvent(io, socket, data));
+    socket.on(SOCKET_MESSAGES.PLAYERS_TURN_OVER, (data) => endPlayersTurn(io, socket, data));
 
     // player events
     socket.on(SOCKET_MESSAGES.PLAYER_READY_EVENT, (data) => playerReadyEvent(io, socket, data));
