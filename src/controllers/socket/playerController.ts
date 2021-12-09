@@ -11,6 +11,7 @@ import {
   setPlayersTimeLeftInTurn,
   setPlayerTurnStatus,
   setRandomPlayerCategory,
+  swapWordsForPlayer,
   takeASecondOffAPlayerTimer,
 } from "../../services/GameService";
 import { Player, TurnStatusOptions, TURN_LENGTH } from "../../types";
@@ -166,6 +167,26 @@ export const endPlayersTurn = async (
 
   io.in(player.gameId).emit(PLAYERS_IN_GAME_RESPONSE, { playersInGame });
 };
+
+// maybe should be done on the front end - too late now, gone down this path
+export const swapSkippedWordForPlayer = async (
+  io: any,
+  socket: any,
+  data: any
+) => {
+  const { userName, word } = data.query;
+  const player = await getPlayerByUserName(userName);
+
+  if(!player) {
+    console.error("No player found with username ", userName);
+    return;
+  }
+
+  await swapWordsForPlayer(player, word);
+  let playersInGame = await getAllPlayersInGame(player.gameId);
+
+  io.in(player.gameId).emit(PLAYERS_IN_GAME_RESPONSE, { playersInGame });
+}
 
 
 const startTimer = async (player: Player, io: any) => {

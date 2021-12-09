@@ -146,9 +146,7 @@ export async function skipWordForPlayer(userName: string, game: Game) {
     (player: Player) => player.userName === userName
   );
 
-  console.log("yo", player.skippedWords);
-  
-  if(player.skippedWords.length >= 2) {
+  if (player.skippedWords.length >= 2) {
     console.log("You can't skip more than 2 words");
     return;
   }
@@ -277,14 +275,31 @@ export async function changePlayerTurnStatus(
   await RedisClient.set("players", players);
 }
 
-export async function clearPlayersSkippedWords(
-  player: Player
-) {
+export async function clearPlayersSkippedWords(player: Player) {
   const players = await RedisClient.get("players");
   const playerToChange = players.find(
     (toFind: Player) => toFind.id === player.id
   );
   playerToChange.skippedWords = [];
+  await RedisClient.set("players", players);
+}
+
+export async function swapWordsForPlayer(player: Player, word: string) {
+  const players = await RedisClient.get("players");
+  const playerToChange = players.find(
+    (toFind: Player) => toFind.id === player.id
+  );
+  const currentWord = playerToChange.currentWord;
+  // word that was selected needs to be swapped in to the current word
+  playerToChange.currentWord = word;
+
+  // delete the word they're currently on and add the current word to the skipped words
+  const index = playerToChange.skippedWords.findIndex(
+    (toFind: string) => toFind === word
+  );
+  playerToChange.skippedWords.splice(index, 1);
+  playerToChange.skippedWords.push(currentWord);
+
   await RedisClient.set("players", players);
 }
 
