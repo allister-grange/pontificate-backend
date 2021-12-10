@@ -15,6 +15,7 @@ export const REJOIN_PLAYER = 'rejoinPlayer';
 export const GET_CURRENT_PLAYERS_IN_GAME_EVENT = 'getCurrentPlayersInGameEvent';
 export const PLAYERS_TURN_OVER = "playersTurnOver";
 export const NEW_PLAYER_LOBBY_EVENT = 'newPlayerLobbyEvent';
+export const GAME_STARTED_EVENT = 'gameStartedEvent';
 export const GAME_OVER_RES = 'gameOverRes';
 export const NEW_GAME_LOBBY_MADE = 'newGameLobbyCreated';
 export const DISCONNECT = 'disconnect';

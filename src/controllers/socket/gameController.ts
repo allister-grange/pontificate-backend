@@ -1,23 +1,21 @@
-import { Server } from "socket.io";
-import { Player } from "src/types";
 import {
   DOES_GAME_EXIST_RES,
   DOES_USERNAME_EXIST_RES,
   GAME_OVER_RES,
+  GAME_STARTED_EVENT,
+  NEW_PLAYER_LOBBY_EVENT,
   PLAYERS_IN_GAME_RESPONSE,
 } from "../../constants/socketMessages";
 import {
-  joinPlayer,
-  getPlayerByUserName,
-  getAllPlayersInGame,
-  setPointsOfPlayer,
-  changePlayerTurnStatus,
-  getGame,
   addSeenWordToGame,
+  changePlayerTurnStatus,
   chooseNextWordForPlayer,
+  getAllPlayersInGame,
+  getGame,
+  getPlayerByUserName,
+  joinPlayer,
+  setPointsOfPlayer,
   skipWordForPlayer,
-  clearPlayersSkippedWords,
-  setPlayersTimeLeftInTurn,
 } from "../../services/GameService";
 
 const gameExists = (io: any, gameId: string): boolean =>
@@ -123,7 +121,7 @@ export const newPlayerLobbyEvent = async (io: any, socket: any, data: any) => {
   const playersInGame = await getAllPlayersInGame(gameId);
   console.log(`Game ${gameId} had player ${userName} join`);
 
-  io.in(gameId).emit("newPlayerLobbyEvent", {
+  io.in(gameId).emit(NEW_PLAYER_LOBBY_EVENT, {
     userId: player.id,
     userName: player.userName,
     text: `${player.userName} has joined the game`,
@@ -206,14 +204,14 @@ export const startNewGameEvent = async (io: any, socket: any, data: any) => {
   const playersInGameAfterChange = await getAllPlayersInGame(gameId);
 
   console.log(`Starting game with id of ${gameId}`);
-  io.in(gameId).emit("gameStartedEvent", { playersInGameAfterChange });
+  io.in(gameId).emit(GAME_STARTED_EVENT, { playersInGameAfterChange });
 };
 
 export const skipWordEvent = async (io: any, socket: any, data: any) => {
   const { gameId, userName } = data.query;
   const game = await getGame(gameId);
 
-  if(!game){
+  if (!game) {
     console.log(`game ${gameId} doesn't exist yet, what are you up to?`);
     return;
   }
